@@ -1,0 +1,8 @@
+{
+  "name": "WIZBII x Revolut",
+  "description": "A sleek confirmation page for WIZBII contest participation with promotional offers, expense examples, and secure attachment email delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
