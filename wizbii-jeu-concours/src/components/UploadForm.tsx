@@ -201,6 +201,7 @@ export default function UploadForm() {
             encType="multipart/form-data"
             className="flex flex-col gap-6"
           >
+            <input type="hidden" name="partenaire" value="Revolut" />
             {/* Header portion with Padlock */}
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-[#ebeafe] text-[#8683FF] rounded-2xl flex items-center justify-center shrink-0 border border-[#8683ff]/20">
