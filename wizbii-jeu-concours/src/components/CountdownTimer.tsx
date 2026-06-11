@@ -74,7 +74,7 @@ export default function CountdownTimer() {
       <div className="flex items-center gap-2 mb-3">
         <Clock className="w-4 h-4 text-[#8386ff] animate-pulse" />
         <span className="text-xs font-extrabold text-[#000028] uppercase tracking-wider">
-          Temps restant pour participer :
+          Temps restant pour envoyer ton justificatif :
         </span>
       </div>
 

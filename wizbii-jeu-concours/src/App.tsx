@@ -82,11 +82,11 @@ export default function App() {
           className="relative px-5 md:px-6 py-4 flex flex-col items-center text-center overflow-hidden"
         >
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#8386ff] font-headline mb-3 relative z-10 tracking-tight">
-            Jeu 100% gagnant
+            Jeu<br />100% gagnant
           </h2>
 
           <p className="text-base md:text-lg lg:text-xl font-bold leading-relaxed text-[#000028] max-w-2xl mb-5 relative z-10 px-4">
-            WIZBII vous rembourse <strong className="font-extrabold text-[#000028]">10€</strong> sur vos dépenses de juillet depuis votre compte Revolut ! <span className="text-[#8386ff]">Et tentez de remporter <strong className="font-extrabold text-[#8386ff]">1 000€</strong> 🤩</span>
+            WIZBII te rembourse <strong className="font-extrabold text-[#000028]">10€</strong> sur tes dépenses de juillet avec ta carte Revolut ! Et tente de remporter les <strong className="font-extrabold text-[#8386ff]">1000€</strong> mis en jeu 😱
           </p>
           
           <div className="flex flex-row flex-wrap gap-2 items-center justify-center w-full relative z-10">
@@ -118,71 +118,36 @@ export default function App() {
               <div className="flex items-start gap-3.5">
                 <span className="text-xl md:text-2xl select-none shrink-0" role="img" aria-label="card">💳</span>
                 <div>
-                  <span className="font-extrabold text-[#000028] text-sm md:text-base">Dépensez : </span>
-                  <span className="text-[#46464f] text-xs md:text-sm font-semibold">Utilisez votre compte Revolut en juillet (10€ minimum requis).</span>
+                  <span className="font-extrabold text-[#000028] text-sm md:text-base">Dépense : </span>
+                  <span className="text-[#46464f] text-xs md:text-sm font-semibold">utilise ta carte Revolut (physique ou virtuelle) pour tes dépenses de juillet (min. 10€ requis)</span>
                 </div>
               </div>
               
               <div className="flex items-start gap-3.5">
                 <span className="text-xl md:text-2xl select-none shrink-0" role="img" aria-label="camera">📸</span>
                 <div>
-                  <span className="font-extrabold text-[#000028] text-sm md:text-base">Envoyez : </span>
-                  <span className="text-[#46464f] text-xs md:text-sm font-semibold">Téléchargez votre preuve de dépense via le formulaire juste au dessus.</span>
+                  <span className="font-extrabold text-[#000028] text-sm md:text-base">Envoie : </span>
+                  <span className="text-[#46464f] text-xs md:text-sm font-semibold">télécharge ta preuve de dépense via le formulaire juste au-dessus</span>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5">
                 <span className="text-xl md:text-2xl select-none shrink-0" role="img" aria-label="money bag">💰</span>
                 <div>
-                  <span className="font-extrabold text-[#000028] text-sm md:text-base">Encaissez : </span>
-                  <span className="text-[#46464f] text-xs md:text-sm font-semibold">Recevez 10€ garantis et tentez de gagner 1 000€ au tirage au sort !</span>
+                  <span className="font-extrabold text-[#000028] text-sm md:text-base">Encaisse : </span>
+                  <span className="text-[#46464f] text-xs md:text-sm font-semibold">reçois tes 10€ ET tente de gagner les 1000€ en jeu</span>
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
 
-        {/* Card 4: Examples of expenses (Exemples de dépenses) */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-3xl p-6 md:p-8 border border-white shadow-[0_8px_30px_rgb(0,0,0,0.02)]"
-        >
-          <h3 className="text-base md:text-lg font-black text-[#000028] font-headline mb-6 flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-[#f5f0ff] text-[#8683ff] rounded-xl flex items-center justify-center shrink-0">
-              <ReceiptText className="w-4.5 h-4.5" />
-            </div>
-            Exemples de dépenses
-          </h3>
-          
-          {/* Balanced 2x2 grid identical to screenshot layout */}
-          <div className="grid grid-cols-2 gap-4">
-            {EXPENSES.map((expense, idx) => (
-              <div 
-                key={idx} 
-                className="bg-[#fcfaff] border border-gray-100 rounded-2xl p-5 md:p-6 flex flex-col items-center justify-center text-center hover:bg-[#f6f3ff] transition-colors shadow-2xs group"
-              >
-                <span className="text-3xl md:text-4xl mb-2 select-none group-hover:scale-110 transition-transform duration-200">
-                  {expense.emoji}
-                </span>
-                <p className="text-[10px] md:text-xs font-black text-[#8683ff] uppercase tracking-wider mb-1">
-                  {expense.name}
-                </p>
-                <p className="text-sm md:text-base font-extrabold text-[#000028]">
-                  {expense.price}
-                </p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
         {/* Dynamic Countdown Timer situated below the Examples of expenses */}
         <CountdownTimer />
 
         {/* Sized Footer text with exact screenshot content */}
         <p className="text-[11px] md:text-xs leading-relaxed text-[#46464f]/70 font-semibold text-center mt-3 max-w-2xl mx-auto">
-          * Offre valable sous réserve de vérification des dépenses. Le remboursement de 10€ est garanti pour tout participant éligible. Le virement de 1 000€ sera attribué par tirage au sort parmi les dossiers validés.
+          * Offre valable sous réserve de vérification des dépenses. Le remboursement de 10€ est garanti pour tout participant éligible. Le virement de 1 000€ sera attribué par tirage au sort parmi les participants vérifiés.
         </p>
 
         {/* Discrete Rules link */}

@@ -11,9 +11,15 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
-export default function UploadForm() {
+interface UploadFormProps {
+  defaultPartner?: string;
+}
+
+export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormProps) {
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isTestMode, setIsTestMode] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -21,6 +27,35 @@ export default function UploadForm() {
   const [statusText, setStatusText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
+  const [partner, setPartner] = useState(defaultPartner);
+
+  useEffect(() => {
+    // Automatically detect partner from query parameters if available
+    const params = new URLSearchParams(window.location.search);
+    const partnerParam = params.get("partenaire") || params.get("partner") || params.get("utm_source");
+    if (partnerParam) {
+      setPartner(partnerParam);
+    }
+  }, []);
+
+  useEffect(() => {
+    const alreadySubmitted = localStorage.getItem("has_submitted_contest") === "true";
+    
+    const params = new URLSearchParams(window.location.search);
+    const hasTestParam = params.get("bypass") === "true" || 
+                         params.get("admin") === "true" || 
+                         params.get("test") === "true" ||
+                         window.location.href.includes("ais-dev-") ||
+                         window.location.href.includes("localhost");
+
+    if (hasTestParam) {
+      setIsTestMode(true);
+    }
+
+    if (alreadySubmitted && !hasTestParam) {
+      setHasSubmitted(true);
+    }
+  }, []);
 
   useEffect(() => {
     if ((status === "success" || status === "error") && formContainerRef.current) {
@@ -119,6 +154,7 @@ export default function UploadForm() {
       formData.append("lastname", lastName.trim());
       formData.append("firstname", firstName.trim());
       formData.append("document", file);
+      formData.append("partenaire", partner);
 
       await new Promise(r => setTimeout(r, 400));
       setProgress(50);
@@ -136,6 +172,13 @@ export default function UploadForm() {
       setProgress(100);
       setStatusText("Données transmises avec succès !");
       await new Promise(r => setTimeout(r, 400));
+
+      const isAnthony = firstName.trim().toLowerCase() === "anthony" && 
+                        lastName.trim().toLowerCase() === "garrucho";
+
+      if (!isAnthony) {
+        localStorage.setItem("has_submitted_contest", "true");
+      }
 
       setStatus("success");
       triggerConfetti();
@@ -193,15 +236,49 @@ export default function UploadForm() {
       <div className="absolute top-0 right-0 w-48 h-48 bg-[#8683FF]/5 blur-3xl rounded-full pointer-events-none" />
 
       <AnimatePresence mode="wait">
-        {status === "idle" && (
+        {hasSubmitted ? (
+          <motion.div
+            key="already-submitted"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="py-10 flex flex-col items-center text-center"
+          >
+            <div className="w-16 h-16 bg-[#8683ff]/10 text-[#8683ff] rounded-full flex items-center justify-center border border-[#8683ff]/20 mb-5">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
+
+            <h3 className="text-xl sm:text-2xl font-black font-headline mb-3 text-[#000028]">
+              Tu as déjà participé ! 👏
+            </h3>
+            
+            <p className="text-sm md:text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-6">
+              Ton justificatif a déjà été envoyé avec succès à l’équipe WIZBII ! Une seule participation par personne est autorisée.
+            </p>
+
+            {isTestMode && (
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem("has_submitted_contest");
+                  setHasSubmitted(false);
+                }}
+                className="px-4 py-2 bg-[#8683ff]/15 hover:bg-[#8683ff]/25 text-[#8683ff] text-xs font-black rounded-full transition-all cursor-pointer shadow-2xs border border-[#8683ff]/10"
+              >
+                🛠️ Mode Test Anthony : Réinitialiser la participation
+              </button>
+            )}
+          </motion.div>
+        ) : (
+          <>
+            {status === "idle" && (
           <form
             onSubmit={handleSubmit}
-            action="https://hook.eu1.make.com/oj4paqybxh34tweztstybhh3s1zhm13c?partenaire=Revolut"
+            action="https://hook.eu1.make.com/oj4paqybxh34tweztstybhh3s1zhm13c"
             method="POST"
             encType="multipart/form-data"
             className="flex flex-col gap-6"
           >
-          
             {/* Header portion with Padlock */}
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-[#ebeafe] text-[#8683FF] rounded-2xl flex items-center justify-center shrink-0 border border-[#8683ff]/20">
@@ -209,10 +286,10 @@ export default function UploadForm() {
               </div>
               <div className="flex flex-col gap-1">
                 <h3 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#000028] font-headline">
-                  Débloquez maintenant vos 10€
+                  Débloque tes 10€ dès maintenant
                 </h3>
                 <p className="text-sm md:text-base font-semibold text-[#46464f] leading-snug">
-                  Ajoutez un screen de votre app bancaire Revolut avec vos dépenses de juillet ou votre dernier relevé de compte
+                  Ajoute un screen de ton app bancaire Revolut avec tes dépenses carte de juillet (ou ton dernier relevé de compte)
                 </p>
               </div>
             </div>
@@ -288,7 +365,7 @@ export default function UploadForm() {
                         <Upload className="w-6 h-6" />
                       </div>
                       <p className="font-extrabold text-[#8683FF] text-base mb-1">
-                        Cliquez ou glissez votre fichier ici <span className="text-rose-500">*</span>
+                        Clique ou glisse ton fichier ici <span className="text-rose-500">*</span>
                       </p>
                       <p className="text-xs text-[#46464f] font-bold">
                         PDF, JPG, PNG — max 3 Mo
@@ -330,7 +407,7 @@ export default function UploadForm() {
 
             {/* Modern High-contrast action button */}
             <div className="flex flex-col items-center gap-2 w-full">
-              <input type="hidden" name="partenaire" value="Revolut" />
+              <input type="hidden" name="partenaire" value={partner} />
               <motion.button
                 whileHover={isFormValid ? { scale: 1.01 } : {}}
                 whileTap={isFormValid ? { scale: 0.99 } : {}}
@@ -346,7 +423,7 @@ export default function UploadForm() {
               </motion.button>
               {isFormValid ? (
                 <p className="text-xs text-gray-500 font-semibold text-center leading-relaxed max-w-md">
-                  En cliquant sur le bouton ci-dessus, vous attestez que les informations communiquées sont correctes.
+                  En cliquant sur le bouton ci-dessus, tu attestes que les informations communiquées sont correctes.
                 </p>
               ) : (
                 <p className="text-xs text-rose-500 font-semibold text-center">
@@ -414,8 +491,9 @@ export default function UploadForm() {
               Participation validée ! 👏
             </h3>
             
-            <p className="text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-4">
-              Votre justificatif a été envoyé avec succès à nos équipes. 10€ seront envoyés sur votre compte après vérification du document. Vous êtes dans la course pour tenter de remporter les 1 000€.
+            <p className="text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-4 whitespace-pre-line">
+              Ton justificatif a été envoyé avec succès à l’équipe WIZBII !{"\n"}
+              Tu recevras 10€ sur ton compte Revolut dans les prochains jours.
             </p>
           </motion.div>
         )}
@@ -460,6 +538,8 @@ export default function UploadForm() {
               </motion.button>
             </div>
           </motion.div>
+        )}
+          </>
         )}
       </AnimatePresence>
     </motion.div>
