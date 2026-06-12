@@ -170,10 +170,10 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
       setStatusText("Données transmises avec succès !");
       await new Promise(r => setTimeout(r, 400));
 
-      const isAnthony = firstName.trim().toLowerCase() === "anthony" && 
-                        lastName.trim().toLowerCase() === "garrucho";
+      const params = new URLSearchParams(window.location.search);
+      const hasTestParam = params.get("test") === "true";
 
-      if (!isAnthony) {
+      if (!hasTestParam) {
         localStorage.setItem("hasParticipated", "true");
         localStorage.setItem("has_submitted_contest", "true");
       }
@@ -251,7 +251,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             </h3>
             
             <p className="text-sm md:text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-6">
-              Vous avez déjà participé à ce jeu-concours. Bonne chance !
+              Ta participation pour tenter de remporter les 1 000€ est bien prise en compte. Bonne chance !
             </p>
 
             {isTestMode && (
