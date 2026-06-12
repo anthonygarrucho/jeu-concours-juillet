@@ -39,20 +39,17 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
   }, []);
 
   useEffect(() => {
-    const alreadySubmitted = localStorage.getItem("has_submitted_contest") === "true";
+    const alreadySubmitted = localStorage.getItem("hasParticipated") === "true" ||
+                             localStorage.getItem("has_submitted_contest") === "true";
     
     const params = new URLSearchParams(window.location.search);
-    const hasTestParam = params.get("bypass") === "true" || 
-                         params.get("admin") === "true" || 
-                         params.get("test") === "true" ||
-                         window.location.href.includes("ais-dev-") ||
-                         window.location.href.includes("localhost");
+    const hasTestParam = params.get("test") === "true";
 
     if (hasTestParam) {
       setIsTestMode(true);
-    }
-
-    if (alreadySubmitted && !hasTestParam) {
+      // totally ignored if ?test=true is in the URL
+      setHasSubmitted(false);
+    } else if (alreadySubmitted) {
       setHasSubmitted(true);
     }
   }, []);
@@ -177,6 +174,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                         lastName.trim().toLowerCase() === "garrucho";
 
       if (!isAnthony) {
+        localStorage.setItem("hasParticipated", "true");
         localStorage.setItem("has_submitted_contest", "true");
       }
 
@@ -249,23 +247,24 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             </div>
 
             <h3 className="text-xl sm:text-2xl font-black font-headline mb-3 text-[#000028]">
-              Tu as déjà participé ! 👏
+              Déjà enregistré ! 👏
             </h3>
             
             <p className="text-sm md:text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-6">
-              Ton justificatif a déjà été envoyé avec succès à l’équipe WIZBII ! Une seule participation par personne est autorisée.
+              Vous avez déjà participé à ce jeu-concours. Bonne chance !
             </p>
 
             {isTestMode && (
               <button
                 type="button"
                 onClick={() => {
+                  localStorage.removeItem("hasParticipated");
                   localStorage.removeItem("has_submitted_contest");
                   setHasSubmitted(false);
                 }}
                 className="px-4 py-2 bg-[#8683ff]/15 hover:bg-[#8683ff]/25 text-[#8683ff] text-xs font-black rounded-full transition-all cursor-pointer shadow-2xs border border-[#8683ff]/10"
               >
-                🛠️ Mode Test Anthony : Réinitialiser la participation
+                🛠️ Mode Test : Réinitialiser la participation
               </button>
             )}
           </motion.div>
