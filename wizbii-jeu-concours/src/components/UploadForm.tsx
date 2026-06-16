@@ -10,16 +10,12 @@ import {
   Lock
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { getLangConfig, getTranslations } from "../translations";
 
-interface UploadFormProps {
-  defaultPartner?: string;
-}
-
-export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormProps) {
+export default function UploadForm() {
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [isTestMode, setIsTestMode] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -27,32 +23,20 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
   const [statusText, setStatusText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
-  const [partner, setPartner] = useState(defaultPartner);
 
-  useEffect(() => {
-    // Automatically detect partner from query parameters if available
-    const params = new URLSearchParams(window.location.search);
-    const partnerParam = params.get("partenaire") || params.get("partner") || params.get("utm_source");
-    if (partnerParam) {
-      setPartner(partnerParam);
-    }
-  }, []);
+  const { country, bankParam, bankName, isTestMode } = getLangConfig();
+  const t = getTranslations(country, bankName);
 
   useEffect(() => {
     const alreadySubmitted = localStorage.getItem("hasParticipated") === "true" ||
                              localStorage.getItem("has_submitted_contest") === "true";
     
-    const params = new URLSearchParams(window.location.search);
-    const hasTestParam = params.get("test") === "true";
-
-    if (hasTestParam) {
-      setIsTestMode(true);
-      // totally ignored if ?test=true is in the URL
+    if (isTestMode) {
       setHasSubmitted(false);
     } else if (alreadySubmitted) {
       setHasSubmitted(true);
     }
-  }, []);
+  }, [isTestMode]);
 
   useEffect(() => {
     if ((status === "success" || status === "error") && formContainerRef.current) {
@@ -91,7 +75,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
 
   const validateAndSetFile = (selectedFile: File) => {
     if (selectedFile.size > MAX_FILE_SIZE) {
-      alert(`Le fichier ${selectedFile.name} dépasse la taille maximale autorisée de 3 Mo.`);
+      alert(t.fileTooLarge(selectedFile.name));
       return;
     }
     
@@ -100,7 +84,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
     const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase();
     
     if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
-      alert("Format de fichier non supporté. Veuillez téléverser un fichier PDF, JPG ou PNG.");
+      alert(t.formatNotSupported);
       return;
     }
 
@@ -115,9 +99,9 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 octet";
+    if (bytes === 0) return `0 ${t.sizes[0]}`;
     const k = 1024;
-    const sizes = ["octets", "Ko", "Mo", "Go"];
+    const sizes = t.sizes;
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
@@ -129,21 +113,21 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!lastName.trim()) {
-      alert("Veuillez renseigner votre nom.");
+      alert(t.alertNom);
       return;
     }
     if (!firstName.trim()) {
-      alert("Veuillez renseigner votre prénom.");
+      alert(t.alertPrenom);
       return;
     }
     if (!file) {
-      alert("Veuillez joindre votre justificatif.");
+      alert(t.alertJustificatif);
       return;
     }
 
     setStatus("sending");
     setProgress(15);
-    setStatusText("Préparation de votre dossier...");
+    setStatusText(t.preparationDossier);
 
     try {
       // Create real Multipart FormData to target the Make webhook
@@ -151,11 +135,14 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
       formData.append("lastname", lastName.trim());
       formData.append("firstname", firstName.trim());
       formData.append("document", file);
-      formData.append("partenaire", partner);
+      
+      // Required Make custom invsible variables as specified in Rule 4:
+      formData.append("partenaire", bankParam);
+      formData.append("pays", country);
 
       await new Promise(r => setTimeout(r, 400));
       setProgress(50);
-      setStatusText("Envoi des données vers Make.com...");
+      setStatusText(t.envoiMake);
 
       const response = await fetch("https://hook.eu1.make.com/oj4paqybxh34tweztstybhh3s1zhm13c", {
         method: "POST",
@@ -163,17 +150,20 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
       });
 
       if (!response.ok) {
-        throw new Error(`Une erreur serveur est survenue lors du transfert (${response.status} ${response.statusText}).`);
+        throw new Error(
+          country === "es" 
+            ? `Se produjo un error de servidor durante la transferencia (${response.status} ${response.statusText}).`
+            : country === "it"
+            ? `Si è verificato un errore del server durante il trasferimento (${response.status} ${response.statusText}).`
+            : `Une erreur serveur est survenue lors du transfert (${response.status} ${response.statusText}).`
+        );
       }
 
       setProgress(100);
-      setStatusText("Données transmises avec succès !");
+      setStatusText(t.donneesTransmises);
       await new Promise(r => setTimeout(r, 400));
 
-      const params = new URLSearchParams(window.location.search);
-      const hasTestParam = params.get("test") === "true";
-
-      if (!hasTestParam) {
+      if (!isTestMode) {
         localStorage.setItem("hasParticipated", "true");
         localStorage.setItem("has_submitted_contest", "true");
       }
@@ -183,7 +173,13 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
     } catch (err: any) {
       console.error("Make upload submission failed:", err);
       setStatus("error");
-      setStatusText(err.message || "Impossible d'envoyer votre démarche. Veuillez vérifier votre connexion ou réessayer.");
+      setStatusText(err.message || (
+        country === "es" 
+          ? "No se pudo enviar tu solicitud. Comprueba tu conexión o vuelve a intentarlo."
+          : country === "it"
+          ? "Impossibile inviare la richiesta. Verifica la tua connessione o riprova."
+          : "Impossible d'envoyer votre démarche. Veuillez vérifier votre connexion ou réessayer."
+      ));
     }
   };
 
@@ -247,11 +243,11 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             </div>
 
             <h3 className="text-xl sm:text-2xl font-black font-headline mb-3 text-[#000028]">
-              Déjà enregistré ! 👏
+              {t.dejaEnregistre}
             </h3>
             
             <p className="text-sm md:text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-6">
-              Ta participation pour tenter de remporter les 1 000€ est bien prise en compte. Bonne chance !
+              {t.participationPriseEnCompte}
             </p>
 
             {isTestMode && (
@@ -264,7 +260,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                 }}
                 className="px-4 py-2 bg-[#8683ff]/15 hover:bg-[#8683ff]/25 text-[#8683ff] text-xs font-black rounded-full transition-all cursor-pointer shadow-2xs border border-[#8683ff]/10"
               >
-                🛠️ Mode Test : Réinitialiser la participation
+                {t.modeTest}
               </button>
             )}
           </motion.div>
@@ -285,10 +281,10 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
               </div>
               <div className="flex flex-col gap-1">
                 <h3 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#000028] font-headline">
-                  Débloque tes 10€ dès maintenant
+                  {t.debloqueDèsMaintenant}
                 </h3>
                 <p className="text-sm md:text-base font-semibold text-[#46464f] leading-snug">
-                  Ajoute un screen de ton app bancaire Revolut avec tes dépenses carte de juillet (ou ton dernier relevé de compte)
+                  {t.ajouteScreenInstructions}
                 </p>
               </div>
             </div>
@@ -297,7 +293,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="flex flex-col gap-1.5">
                 <label htmlFor="lastname" className="text-xs font-black uppercase text-[#000028] tracking-wider pl-1">
-                  Nom <span className="text-rose-500">*</span> :
+                  {t.nomLabel} <span className="text-rose-500">*</span> :
                 </label>
                 <input
                   type="text"
@@ -307,12 +303,12 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   className="w-full bg-white/70 focus:bg-white border border-[#8683ff]/20 focus:border-[#8683ff] rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 outline-none placeholder-[#46464f]/40 text-[#000028] shadow-sm"
-                  placeholder="Ex. Martin"
+                  placeholder={t.nomPlaceholder}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="firstname" className="text-xs font-black uppercase text-[#000028] tracking-wider pl-1">
-                  Prénom <span className="text-rose-500">*</span> :
+                  {t.prenomLabel} <span className="text-rose-500">*</span> :
                 </label>
                 <input
                   type="text"
@@ -322,7 +318,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   className="w-full bg-white/70 focus:bg-white border border-[#8683ff]/20 focus:border-[#8683ff] rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 outline-none placeholder-[#46464f]/40 text-[#000028] shadow-sm"
-                  placeholder="Ex. Alexandre"
+                  placeholder={t.prenomPlaceholder}
                 />
               </div>
             </div>
@@ -364,10 +360,10 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                         <Upload className="w-6 h-6" />
                       </div>
                       <p className="font-extrabold text-[#8683FF] text-base mb-1">
-                        Clique ou glisse ton fichier ici <span className="text-rose-500">*</span>
+                        {t.cliquezGlissez} <span className="text-rose-500">*</span>
                       </p>
                       <p className="text-xs text-[#46464f] font-bold">
-                        PDF, JPG, PNG — max 3 Mo
+                        {t.maxSizeLabel}
                       </p>
                     </motion.div>
                   ) : (
@@ -387,7 +383,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                           {file.name}
                         </p>
                         <p className="text-xs text-[#46464f] font-semibold mt-0.5">
-                          Taille : {formatFileSize(file.size)}
+                          {t.tailleLabel} {formatFileSize(file.size)}
                         </p>
                       </div>
                       <button
@@ -396,7 +392,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                         className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-500/10 hover:bg-red-500/25 text-red-600 rounded-full text-xs font-black transition-all cursor-pointer"
                       >
                         <X className="w-3.5 h-3.5" />
-                        Retirer le fichier
+                        {t.retirerFichier}
                       </button>
                     </motion.div>
                   )}
@@ -406,7 +402,8 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
 
             {/* Modern High-contrast action button */}
             <div className="flex flex-col items-center gap-2 w-full">
-              <input type="hidden" name="partenaire" value={partner} />
+              <input type="hidden" name="partenaire" value={bankParam} />
+              <input type="hidden" name="pays" value={country} />
               <motion.button
                 whileHover={isFormValid ? { scale: 1.01 } : {}}
                 whileTap={isFormValid ? { scale: 0.99 } : {}}
@@ -418,15 +415,15 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                     : "bg-[#8683ff] text-white hover:bg-[#726ffd] border-transparent cursor-pointer shadow-md"
                 }`}
               >
-                Réclamer mes 10€ et participer au tirage au sort des 1 000€
+                {t.submitButton}
               </motion.button>
               {isFormValid ? (
                 <p className="text-xs text-gray-500 font-semibold text-center leading-relaxed max-w-md">
-                  En cliquant sur le bouton ci-dessus, tu attestes que les informations communiquées sont correctes.
+                  {t.attestationLabel}
                 </p>
               ) : (
                 <p className="text-xs text-rose-500 font-semibold text-center">
-                  * champs obligatoires pour valider la participation
+                  {t.champsObligatoires}
                 </p>
               )}
             </div>
@@ -449,7 +446,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             </div>
 
             <h4 className="text-lg font-bold font-headline mb-3 text-[#000028]">
-              Envoi en cours de vos informations...
+              {t.envoiEnCours}
             </h4>
             
             <div className="w-full max-w-xs bg-[#8683FF]/15 h-2.5 rounded-full overflow-hidden mb-4 border border-[#8683FF]/10">
@@ -487,12 +484,11 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             </div>
 
             <h3 className="text-lg sm:text-xl md:text-2xl font-black font-headline mb-3 text-[#000028] whitespace-nowrap">
-              Participation validée ! 👏
+              {t.participationValidee}
             </h3>
             
             <p className="text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-4 whitespace-pre-line">
-              Ton justificatif a été envoyé avec succès à l’équipe WIZBII !{"\n"}
-              Tu recevras 10€ sur ton compte Revolut dans les prochains jours.
+              {t.successNotice}
             </p>
           </motion.div>
         )}
@@ -511,7 +507,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
             </div>
 
             <h3 className="text-2xl font-black font-headline mb-3 text-[#000028]">
-              Une erreur s'est produite lors de l'envoi
+              {t.erreurEnvoi}
             </h3>
             
             <p className="text-sm font-semibold text-red-600 max-w-lg leading-relaxed mb-6">
@@ -525,7 +521,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                 onClick={() => setStatus("idle")}
                 className="px-6 py-2.5 rounded-full bg-[#8683FF] text-white font-extrabold text-xs transition-all shadow-xs cursor-pointer hover:bg-[#726ffd]"
               >
-                Réessayer
+                {t.buttonReset}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.03 }}
@@ -533,7 +529,7 @@ export default function UploadForm({ defaultPartner = "Revolut" }: UploadFormPro
                 onClick={resetForm}
                 className="px-6 py-2.5 rounded-full bg-white font-extrabold text-xs text-[#46464f] border border-gray-300 hover:bg-gray-50 transition-all shadow-xs cursor-pointer"
               >
-                Annuler
+                {t.buttonCancel}
               </motion.button>
             </div>
           </motion.div>
