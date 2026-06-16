@@ -32,6 +32,101 @@ const EXPENSES = [
   }
 ];
 
+function AnimatedPrize() {
+  const prizeString = "1 000€";
+  const chars = prizeString.split("").map(c => c === " " ? "\u00A0" : c);
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const charVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 50, 
+      scale: 0.61 
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 260, 
+        damping: 12 
+      } 
+    }
+  };
+
+  const badgeVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 20 
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        delay: 0.5,
+        type: "spring",
+        stiffness: 140,
+        damping: 15
+      } 
+    }
+  };
+
+  const handleScrollToForm = () => {
+    const element = document.getElementById("form-container");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
+
+  return (
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      onClick={handleScrollToForm}
+      className="flex flex-col items-center justify-center select-none py-2 w-full relative z-10 cursor-pointer group active:scale-[0.98] transition-all duration-200"
+      title="Clique pour participer !"
+    >
+      {/* 1 000€ Title Characters with 3D styled dual offset shadow matches the screenshot (white + lilac) */}
+      <div className="flex items-center justify-center relative z-20 group-hover:scale-[1.03] transition-transform duration-300">
+        {chars.map((char, index) => (
+          <motion.span
+            key={index}
+            variants={charVariants}
+            className="inline-block text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-[#000028] tracking-tighter"
+            style={{ 
+              textShadow: "0.03em 0.03em 0px #8386ff, 0.07em 0.07em 0px #ffffff",
+              WebkitFontSmoothing: "antialiased" 
+            }}
+          >
+            {char}
+          </motion.span>
+        ))}
+      </div>
+
+      {/* À GAGNER Badge layered behind the 3D text/shadows with a tight negative margin */}
+      <motion.div
+        variants={badgeVariants}
+        className="bg-[#8386ff] rounded-[24px] px-8 py-2 md:px-11 md:py-3.5 -mt-2 md:-mt-3 relative z-10 shadow-md shadow-[#8386ff]/30 border-2 border-white group-hover:scale-105 transition-transform duration-300"
+      >
+        <span className="text-sm sm:text-base md:text-lg lg:text-xl font-black text-black uppercase tracking-wider">
+          À GAGNER
+        </span>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function App() {
   // Splash some gentle opening confetti to celebrate the premium transition
   useEffect(() => {
@@ -59,7 +154,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-16 pt-24 md:pt-28 font-body">
+    <div className="min-h-screen pb-12 pt-20 md:pt-24 font-body">
       {/* Sleek transparent sticky Header as requested with WIZBII brand element */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -73,34 +168,27 @@ export default function App() {
       </header>
 
       {/* Main Single Column Layout matching the screenshot */}
-      <main className="max-w-3xl mx-auto px-4 flex flex-col gap-4 md:gap-5">
+      <main className="max-w-3xl mx-auto px-4 flex flex-col gap-3 md:gap-4">
         
         {/* Card 1: Main Title Info Card */}
         <motion.section 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative px-5 md:px-6 py-4 flex flex-col items-center text-center overflow-hidden"
+          className="relative px-5 md:px-6 py-2 flex flex-col items-center text-center overflow-hidden"
         >
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#8386ff] font-headline mb-3 relative z-10 tracking-tight">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#8386ff] font-headline mb-2 relative z-10 tracking-tight">
             Jeu<br />100% gagnant
           </h2>
 
-          <p className="text-base md:text-lg lg:text-xl font-bold leading-relaxed text-[#000028] max-w-2xl mb-5 relative z-10 px-4">
+          <p className="text-base md:text-lg lg:text-xl font-bold leading-relaxed text-[#000028] max-w-2xl mb-3 relative z-10 px-4">
             WIZBII te rembourse <strong className="font-extrabold text-[#000028]">10€</strong> sur tes dépenses de juillet avec ta carte Revolut ! Et tente de remporter les <strong className="font-extrabold text-[#8386ff]">1000€</strong> mis en jeu 😱
           </p>
           
-          <div className="flex flex-row flex-wrap gap-2 items-center justify-center w-full relative z-10">
-            <div className="bg-[#ecfef9] border border-[#c3fded] text-[#155745] rounded-full px-3.5 py-1.5 text-[11px] sm:text-xs md:text-sm font-extrabold flex items-center gap-1 shadow-2xs">
-              <span>😉</span> Remboursement de 10€ garanti
-            </div>
-            <div className="bg-[#f3f3ff] border border-[#C8C9FC] text-[#8386ff] rounded-full px-3.5 py-1.5 text-[11px] sm:text-xs md:text-sm font-extrabold flex items-center gap-1 shadow-2xs">
-              <span>🎁</span> Virement de 1 000€ à gagner
-            </div>
-          </div>
+          <AnimatedPrize />
         </motion.section>
 
         {/* Form Zone Component and Comment ça marche combined in a tighter container */}
-        <div className="flex flex-col gap-2 md:gap-2.5">
+        <div id="form-container" className="flex flex-col gap-2 md:gap-2.5">
           {/* Card 3: Form Zone Component (Dashed box upload & Submit) */}
           <UploadForm />
 
