@@ -10,7 +10,158 @@ import {
   Lock
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { getLangConfig, getTranslations } from "../translations";
+
+// Self-contained language configuration helper
+export interface LangConfig {
+  country: "fr" | "es" | "it";
+  bankParam: string;
+  bankName: string;
+  isTestMode: boolean;
+}
+
+export const getLangConfig = (): LangConfig => {
+  if (typeof window === "undefined") {
+    return { country: "fr", bankParam: "revolut", bankName: "Revolut", isTestMode: false };
+  }
+  const params = new URLSearchParams(window.location.search);
+  const paysParam = (params.get("pays") || "fr").toLowerCase();
+  const countryInput = ["fr", "es", "it"].includes(paysParam) ? paysParam : "fr";
+  const country = countryInput as "fr" | "es" | "it";
+
+  const allowedBanksByCountry: Record<string, string[]> = {
+    fr: ["revolut", "bforbank", "n26", "trade-republic"],
+    es: ["revolut", "n26", "b100"],
+    it: ["revolut", "trade-republic", "hype"]
+  };
+
+  const bankDisplayNames: Record<string, string> = {
+    "revolut": "Revolut",
+    "bforbank": "BforBank",
+    "n26": "N26",
+    "trade-republic": "Trade Republic",
+    "b100": "B100",
+    "hype": "Hype"
+  };
+
+  const rawBank = (params.get("banque") || params.get("partenaire") || params.get("partner") || "").toLowerCase();
+  const allowedBanks = allowedBanksByCountry[country];
+  const bankParam = allowedBanks.includes(rawBank) ? rawBank : allowedBanks[0];
+  const bankName = bankDisplayNames[bankParam] || "Revolut";
+  const isTestMode = params.get("test") === "true";
+
+  return {
+    country,
+    bankParam,
+    bankName,
+    isTestMode
+  };
+};
+
+// Complete translation dictionary embedded directly to prevent any external file resolution errors
+const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
+  const translations = {
+    fr: {
+      dejaEnregistre: "Déjà enregistré ! 👏",
+      participationPriseEnCompte: `Ta participation pour tenter de remporter les 1 000€ est bien prise en compte. Bonne chance !`,
+      modeTest: "🛠️ Mode Test : Réinitialiser la participation",
+      debloqueDèsMaintenant: "Débloque tes 10€ dès maintenant",
+      ajouteScreenInstructions: `Ajoute un screen de ton app bancaire ${bankName} avec tes dépenses carte de juillet (ou ton dernier relevé de compte)`,
+      nomLabel: "Nom",
+      prenomLabel: "Prénom",
+      nomPlaceholder: "Ex. Martin",
+      prenomPlaceholder: "Ex. Alexandre",
+      alertNom: "Veuillez renseigner votre nom.",
+      alertPrenom: "Veuillez renseigner votre prénom.",
+      alertJustificatif: "Veuillez joindre votre justificatif.",
+      fileTooLarge: (fileName: string) => `Le fichier ${fileName} dépasse la taille maximale autorisée de 3 Mo.`,
+      formatNotSupported: "Format de fichier non supporté. Veuillez téléverser un fichier PDF, JPG ou PNG.",
+      cliquezGlissez: "Clique ou glisse ton fichier ici",
+      maxSizeLabel: "PDF, JPG, PNG — max 3 Mo",
+      tailleLabel: "Taille : ",
+      sizes: ["octets", "Ko", "Mo", "Go"],
+      retirerFichier: "Retirer le fichier",
+      submitButton: "Réclamer mes 10€ et participer au tirage au sort des 1 000€",
+      attestationLabel: "En cliquant sur le bouton ci-dessus, tu attestes que les informations communiquées sont correctes.",
+      champsObligatoires: "* champs obligatoires pour valider la participation",
+      envoiEnCours: "Envoi en cours de vos informations...",
+      preparationDossier: "Préparation de votre dossier...",
+      envoiMake: "Envoi des données vers Make.com...",
+      donneesTransmises: "Données transmises avec succès !",
+      participationValidee: "Participation validée ! 👏",
+      successNotice: `Ton justificatif a été envoyé avec succès à l’équipe WIZBII !\nTu recevras 10€ sur ton compte ${bankName} dans les prochains jours.`,
+      erreurEnvoi: "Une erreur s'est produite lors de l'envoi",
+      buttonReset: "Réessayer",
+      buttonCancel: "Annuler",
+    },
+    es: {
+      dejaEnregistre: "¡Ya registrado! 👏",
+      participationPriseEnCompte: `Tu participación para intentar ganar los 1.000€ ha sido registrada. ¡Buena suerte!`,
+      modeTest: "🛠️ Modo Test: Reiniciar participación",
+      debloqueDèsMaintenant: "Desbloquea tus 10€ ahora",
+      ajouteScreenInstructions: `Añade una captura de pantalla de tu app bancaria ${bankName} con tus gastos de tarjeta de julio (o tu último extracto bancario)`,
+      nomLabel: "Apellido",
+      prenomLabel: "Nombre",
+      nomPlaceholder: "Ej. García",
+      prenomPlaceholder: "Ej. Alejandro",
+      alertNom: "Por favor, introduce tu apellido.",
+      alertPrenom: "Por favor, introduce tu nombre.",
+      alertJustificatif: "Por favor, adjunta tu comprobante.",
+      fileTooLarge: (fileName: string) => `El archivo ${fileName} supera el tamaño de 3 MB permitido.`,
+      formatNotSupported: "Formato de archivo no soportado. Por favor, sube un archivo PDF, JPG o PNG.",
+      cliquezGlissez: "Haz clic o arrastra tu archivo aquí",
+      maxSizeLabel: "PDF, JPG, PNG — máx 3 MB",
+      tailleLabel: "Tamaño: ",
+      sizes: ["octetos", "KB", "MB", "GB"],
+      retirerFichier: "Eliminar archivo",
+      submitButton: "Reclamar mis 10€ y participar en el sorteo de 1.000€",
+      attestationLabel: "Al hacer clic en el botón, certificas que la información proporcionada es correcta.",
+      champsObligatoires: "* campos obligatorios para validar la participación",
+      envoiEnCours: "Enviando tu información...",
+      preparationDossier: "Preparando tu solicitud...",
+      envoiMake: "Enviando datos a Make.com...",
+      donneesTransmises: "¡Datos transmitidos con éxito!",
+      participationValidee: "¡Participación aprobada! 👏",
+      successNotice: `¡Tu comprobante ha sido enviado con éxito al equipo de WIZBII!\nRecibirás 10€ en tu cuenta ${bankName} en los próximos días.`,
+      erreurEnvoi: "Ocurrió un error al enviar",
+      buttonReset: "Reintentar",
+      buttonCancel: "Cancelar",
+    },
+    it: {
+      dejaEnregistre: "Già registrato! 👏",
+      participationPriseEnCompte: `La tua partecipazione per provare a vincere i 1.000€ è stata registrata. Buona fortuna!`,
+      modeTest: "🛠️ Modalità Test: Reimposta partecipazione",
+      debloqueDèsMaintenant: "Sblocca i tuoi 10€ ora",
+      ajouteScreenInstructions: `Aggiungi uno screenshot della tua app bancaria ${bankName} con le tue spese con carta di luglio (o il tuo ultimo estratto conto)`,
+      nomLabel: "Cognome",
+      prenomLabel: "Nome",
+      nomPlaceholder: "Es. Rossi",
+      prenomPlaceholder: "Es. Alessandro",
+      alertNom: "Per favore, inserisci il tuo cognome.",
+      alertPrenom: "Per favore, inserisci il tuo nome.",
+      alertJustificatif: "Per favore, allega la tua prova di spesa.",
+      fileTooLarge: (fileName: string) => `Il file ${fileName} supera la dimensione massima consentita di 3 MB.`,
+      formatNotSupported: "Formato file non supportato. Carica un file PDF, JPG o PNG.",
+      cliquezGlissez: "Clicca o trascina qui il tuo file",
+      maxSizeLabel: "PDF, JPG, PNG — max 3 MB",
+      tailleLabel: "Dimensione: ",
+      sizes: ["byte", "KB", "MB", "GB"],
+      retirerFichier: "Rimuovi file",
+      submitButton: "Richiedi i miei 10€ e partecipa al sorteggio di 1.000€",
+      attestationLabel: "Cliccando sul pulsante qui sopra, dichiari che le informazioni fornite sono corrette.",
+      champsObligatoires: "* campi obbligatori per convalidare la partecipazione",
+      envoiEnCours: "Invio delle informazioni in corso...",
+      preparationDossier: "Preparazione della tua richiesta...",
+      envoiMake: "Inviando dati a Make.com...",
+      donneesTransmises: "Dati inviati con successo!",
+      participationValidee: "Partecipazione confermata! 👏",
+      successNotice: `La tua prova di spesa è stata inviata con successo al team WIZBII!\nRiceverai 10€ sul tuo conto ${bankName} nei prossimi giorni.`,
+      erreurEnvoi: "Si è verificato un errore durante l'invio",
+      buttonReset: "Riprova",
+      buttonCancel: "Annulla",
+    }
+  };
+  return translations[country];
+};
 
 export default function UploadForm() {
   const [lastName, setLastName] = useState("");
