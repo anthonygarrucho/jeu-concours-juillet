@@ -241,7 +241,7 @@ export default function App() {
         {/* Discrete Rules link */}
         <div className="flex justify-center mt-2">
           <a 
-            href="https://wizbii.com/redirect-img-gcs/wizbii-files/2805c342-0b47-4873-a463-e4b5e09e8651.pdf"
+            href="https://jeu-concours-wizbii.netlify.app/reglement.pdf"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-bold text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1 bg-white/20 px-4 py-1.5 rounded-full border border-gray-200/40 shadow-3xs"
