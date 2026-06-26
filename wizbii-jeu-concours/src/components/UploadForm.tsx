@@ -17,16 +17,18 @@ export interface LangConfig {
   bankParam: string;
   bankName: string;
   isTestMode: boolean;
+  userId: string | null;
 }
 
 export const getLangConfig = (): LangConfig => {
   if (typeof window === "undefined") {
-    return { country: "fr", bankParam: "revolut", bankName: "Revolut", isTestMode: false };
+    return { country: "fr", bankParam: "revolut", bankName: "Revolut", isTestMode: false, userId: null };
   }
   const params = new URLSearchParams(window.location.search);
-  const paysParam = (params.get("pays") || "fr").toLowerCase();
-  const countryInput = ["fr", "es", "it"].includes(paysParam) ? paysParam : "fr";
-  const country = countryInput as "fr" | "es" | "it";
+  
+  // Read country parameter (falls back to legacy pays parameter or "fr")
+  const rawCountry = (params.get("country") || params.get("pays") || "fr").toLowerCase();
+  const country = ["fr", "es", "it"].includes(rawCountry) ? (rawCountry as "fr" | "es" | "it") : "fr";
 
   const allowedBanksByCountry: Record<string, string[]> = {
     fr: ["revolut", "bforbank", "n26", "trade-republic"],
@@ -43,17 +45,21 @@ export const getLangConfig = (): LangConfig => {
     "hype": "Hype"
   };
 
-  const rawBank = (params.get("banque") || params.get("partenaire") || params.get("partner") || "").toLowerCase();
+  // Read partner parameter (falls back to legacy banque / partenaire / partner or first allowed bank of country)
+  const rawBank = (params.get("partner") || params.get("banque") || params.get("partenaire") || "").toLowerCase();
   const allowedBanks = allowedBanksByCountry[country];
   const bankParam = allowedBanks.includes(rawBank) ? rawBank : allowedBanks[0];
   const bankName = bankDisplayNames[bankParam] || "Revolut";
+  
   const isTestMode = params.get("test") === "true";
+  const userId = params.get("uid");
 
   return {
     country,
     bankParam,
     bankName,
-    isTestMode
+    isTestMode,
+    userId
   };
 };
 
@@ -175,7 +181,7 @@ export default function UploadForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
 
-  const { country, bankParam, bankName, isTestMode } = getLangConfig();
+  const { country, bankParam, bankName, isTestMode, userId } = getLangConfig();
   const t = getTranslations(country, bankName);
 
   useEffect(() => {
@@ -290,6 +296,9 @@ export default function UploadForm() {
       // Required Make custom invsible variables as specified in Rule 4:
       formData.append("partenaire", bankParam);
       formData.append("pays", country);
+      if (userId) {
+        formData.append("userId", userId);
+      }
 
       await new Promise(r => setTimeout(r, 400));
       setProgress(50);
@@ -555,6 +564,7 @@ export default function UploadForm() {
             <div className="flex flex-col items-center gap-2 w-full">
               <input type="hidden" name="partenaire" value={bankParam} />
               <input type="hidden" name="pays" value={country} />
+              {userId && <input type="hidden" name="userId" value={userId} />}
               <motion.button
                 whileHover={isFormValid ? { scale: 1.01 } : {}}
                 whileTap={isFormValid ? { scale: 0.99 } : {}}
