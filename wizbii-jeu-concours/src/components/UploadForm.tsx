@@ -76,8 +76,12 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
       prenomLabel: "Prénom",
       nomPlaceholder: "Ex. Martin",
       prenomPlaceholder: "Ex. Alexandre",
+      emailLabel: "Adresse e-mail",
+      emailPlaceholder: "Ex. alexandre@email.com",
       alertNom: "Veuillez renseigner votre nom.",
       alertPrenom: "Veuillez renseigner votre prénom.",
+      alertEmailMissing: "Veuillez renseigner votre adresse e-mail.",
+      alertEmailInvalid: "Veuillez renseigner une adresse e-mail valide (ex: un@email.com).",
       alertJustificatif: "Veuillez joindre votre justificatif.",
       fileTooLarge: (fileName: string) => `Le fichier ${fileName} dépasse la taille maximale autorisée de 3 Mo.`,
       formatNotSupported: "Format de fichier non supporté. Veuillez téléverser un fichier PDF, JPG ou PNG.",
@@ -86,6 +90,9 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
       tailleLabel: "Taille : ",
       sizes: ["octets", "Ko", "Mo", "Go"],
       retirerFichier: "Retirer le fichier",
+      acceptRulesPart1: "J’accepte le ",
+      acceptRulesLink: "règlement du jeu concours",
+      acceptRulesPart2: "",
       submitButton: "Réclamer mes 10€ et participer au tirage au sort des 1 000€",
       attestationLabel: "En cliquant sur le bouton ci-dessus, tu attestes que les informations communiquées sont correctes.",
       champsObligatoires: "* champs obligatoires pour valider la participation",
@@ -109,8 +116,12 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
       prenomLabel: "Nombre",
       nomPlaceholder: "Ej. García",
       prenomPlaceholder: "Ej. Alejandro",
+      emailLabel: "Correo electrónico",
+      emailPlaceholder: "Ej. alejandro@email.com",
       alertNom: "Por favor, introduce tu apellido.",
       alertPrenom: "Por favor, introduce tu nombre.",
+      alertEmailMissing: "Por favor, introduce tu correo electrónico.",
+      alertEmailInvalid: "Por favor, introduce un correo electrónico válido (ej: un@email.com).",
       alertJustificatif: "Por favor, adjunta tu comprobante.",
       fileTooLarge: (fileName: string) => `El archivo ${fileName} supera el tamaño de 3 MB permitido.`,
       formatNotSupported: "Formato de archivo no soportado. Por favor, sube un archivo PDF, JPG o PNG.",
@@ -119,6 +130,9 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
       tailleLabel: "Tamaño: ",
       sizes: ["octetos", "KB", "MB", "GB"],
       retirerFichier: "Eliminar archivo",
+      acceptRulesPart1: "Acepto las ",
+      acceptRulesLink: "bases del concurso",
+      acceptRulesPart2: "",
       submitButton: "Reclamar mis 10€ y participar en el sorteo de 1.000€",
       attestationLabel: "Al hacer clic en el botón, certificas que la información proporcionada es correcta.",
       champsObligatoires: "* campos obligatorios para validar la participación",
@@ -142,8 +156,12 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
       prenomLabel: "Nome",
       nomPlaceholder: "Es. Rossi",
       prenomPlaceholder: "Es. Alessandro",
+      emailLabel: "E-mail",
+      emailPlaceholder: "Es. alessandro@email.com",
       alertNom: "Per favore, inserisci il tuo cognome.",
       alertPrenom: "Per favore, inserisci il tuo nome.",
+      alertEmailMissing: "Per favore, inserisci il tuo indirizzo e-mail.",
+      alertEmailInvalid: "Per favore, inserisci un indirizzo e-mail valido (es: un@email.com).",
       alertJustificatif: "Per favore, allega la tua prova di spesa.",
       fileTooLarge: (fileName: string) => `Il file ${fileName} supera la dimensione massima consentita di 3 MB.`,
       formatNotSupported: "Formato file non supportato. Carica un file PDF, JPG o PNG.",
@@ -152,6 +170,9 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
       tailleLabel: "Dimensione: ",
       sizes: ["byte", "KB", "MB", "GB"],
       retirerFichier: "Rimuovi file",
+      acceptRulesPart1: "Accetto il ",
+      acceptRulesLink: "regolamento del concorso",
+      acceptRulesPart2: "",
       submitButton: "Richiedi i miei 10€ e partecipa al sorteggio di 1.000€",
       attestationLabel: "Cliccando sul pulsante qui sopra, dichiari che le informazioni fornite sono corrette.",
       champsObligatoires: "* campi obbligatori per convalidare la partecipazione",
@@ -172,6 +193,9 @@ const getTranslations = (country: "fr" | "es" | "it", bankName: string) => {
 export default function UploadForm() {
   const [lastName, setLastName] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [acceptRules, setAcceptRules] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -201,7 +225,17 @@ export default function UploadForm() {
     }
   }, [status]);
 
-  const isFormValid = lastName.trim() !== "" && firstName.trim() !== "" && file !== null;
+  const isEmailValid = (emailStr: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailStr.trim());
+  };
+
+  const isFormValid = lastName.trim() !== "" && 
+                      firstName.trim() !== "" && 
+                      email.trim() !== "" && 
+                      isEmailValid(email) && 
+                      file !== null && 
+                      acceptRules;
 
   const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
@@ -277,6 +311,17 @@ export default function UploadForm() {
       alert(t.alertPrenom);
       return;
     }
+    if (!email.trim()) {
+      alert(t.alertEmailMissing);
+      return;
+    }
+    if (!isEmailValid(email)) {
+      alert(t.alertEmailInvalid);
+      return;
+    }
+    if (!acceptRules) {
+      return;
+    }
     if (!file) {
       alert(t.alertJustificatif);
       return;
@@ -290,7 +335,10 @@ export default function UploadForm() {
       // Create real Multipart FormData to target the Make webhook
       const formData = new FormData();
       formData.append("lastname", lastName.trim());
+      formData.append("nom", lastName.trim());
       formData.append("firstname", firstName.trim());
+      formData.append("prenom", firstName.trim());
+      formData.append("email", email.trim());
       formData.append("document", file);
       
       // Required Make custom invsible variables as specified in Rule 4:
@@ -372,6 +420,11 @@ export default function UploadForm() {
   };
 
   const resetForm = () => {
+    setLastName("");
+    setFirstName("");
+    setEmail("");
+    setEmailTouched(false);
+    setAcceptRules(false);
     setFile(null);
     setStatus("idle");
     setProgress(0);
@@ -483,6 +536,30 @@ export default function UploadForm() {
               </div>
             </div>
 
+            {/* E-mail Input Field */}
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-xs font-black uppercase text-[#000028] tracking-wider pl-1">
+                {t.emailLabel} <span className="text-rose-500">*</span> :
+              </label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => setEmailTouched(true)}
+                className="w-full bg-white/70 focus:bg-white border border-[#8683ff]/20 focus:border-[#8683ff] rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 outline-none placeholder-[#46464f]/40 text-[#000028] shadow-sm"
+                placeholder={t.emailPlaceholder}
+              />
+              {emailTouched && email.trim() !== "" && !isEmailValid(email) && (
+                <p className="text-xs text-rose-500 font-bold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {t.alertEmailInvalid}
+                </p>
+              )}
+            </div>
+
             {/* Drag & Drop File Zone */}
             <div className="flex flex-col gap-1.5">
               <div
@@ -561,10 +638,35 @@ export default function UploadForm() {
             </div>
 
             {/* Modern High-contrast action button */}
-            <div className="flex flex-col items-center gap-2 w-full">
+            <div className="flex flex-col items-center gap-4 w-full">
               <input type="hidden" name="partenaire" value={bankParam} />
               <input type="hidden" name="pays" value={country} />
               {userId && <input type="hidden" name="userId" value={userId} />}
+
+              {/* Opt-in rules checkbox */}
+              <div className="flex items-start gap-2.5 px-1 py-1 select-none w-full text-left">
+                <input
+                  type="checkbox"
+                  id="acceptRules"
+                  required
+                  checked={acceptRules}
+                  onChange={(e) => setAcceptRules(e.target.checked)}
+                  className="mt-0.5 h-4.5 w-4.5 rounded border-[#8683ff]/30 text-[#8683ff] focus:ring-[#8683ff]/50 cursor-pointer accent-[#8683ff] shrink-0"
+                />
+                <label htmlFor="acceptRules" className="text-xs md:text-sm font-semibold text-[#46464f] cursor-pointer leading-tight">
+                  {t.acceptRulesPart1}
+                  <a 
+                    href="/reglement.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="underline font-black text-[#8683ff] hover:text-[#726ffd] transition-colors"
+                  >
+                    {t.acceptRulesLink}
+                  </a>
+                  {t.acceptRulesPart2}
+                  <span className="text-rose-500 font-bold"> *</span>
+                </label>
+              </div>
               <motion.button
                 whileHover={isFormValid ? { scale: 1.01 } : {}}
                 whileTap={isFormValid ? { scale: 0.99 } : {}}
