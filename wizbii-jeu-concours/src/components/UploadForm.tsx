@@ -64,7 +64,7 @@ const getLangConfig = (): LangConfig => {
     bankName = bankDisplayNames[defaultBank] || (defaultBank.charAt(0).toUpperCase() + defaultBank.slice(1));
   }
   
-  const isTestMode = true;
+  const isTestMode = params.get("test") === "true";
   const userId = params.get("uid");
 
   return {
