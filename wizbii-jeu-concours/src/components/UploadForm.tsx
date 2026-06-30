@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import confettiModule from "canvas-confetti";
 const confetti = confettiModule.create(undefined, { resize: true, useWorker: false });
-import { getLangConfig, getTranslations, getRulesLink } from "../translations";
+import { getLangConfig, getTranslations } from "../translations";
 
 
 export default function UploadForm() {
@@ -496,7 +496,7 @@ export default function UploadForm() {
                 <label htmlFor="acceptRules" className="text-xs md:text-sm font-semibold text-[#46464f] cursor-pointer leading-tight">
                   {t.acceptRulesPart1}
                   <a 
-                    href={getRulesLink(country)} 
+                    href={country === "es" ? "/reglamento.pdf" : country === "it" ? "/regolamento.pdf" : "/reglement.pdf"} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="underline font-black text-[#8683ff] hover:text-[#726ffd] transition-colors"
