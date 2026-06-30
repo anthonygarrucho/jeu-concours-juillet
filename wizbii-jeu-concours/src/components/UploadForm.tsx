@@ -65,7 +65,8 @@ const getLangConfig = (): LangConfig => {
   }
   
   const isTestMode = params.get("test") === "true";
-  const userId = params.get("uid");
+  // Blindage de la récupération de l'ID utilisateur (gère toutes les casses possibles du CRM)
+  const userId = params.get("userId") || params.get("userid") || params.get("uid") || params.get("USERID");
 
   return {
     country,
@@ -231,10 +232,10 @@ const staticTranslations = {
     "acceptRulesPart2": "",
     "envoiEnCours": "Invio delle informazioni in corso...",
     "preparationDossier": "Preparazione della tua richiesta...",
-    "envoiMake": "Inviando dati a Make.com...",
+    "envoiMake": "Inviando datos a Make.com...",
     "donneesTransmises": "Dati inviati con successo!",
     "modeTest": "🛠️ Modalità Test: Reimposta partecipazione",
-    "clickToParticipate": "Clicca per partecipare!"
+    "clickToParticipate": "Clicca la tua partecipazione"
   }
 } as const;
 
@@ -243,7 +244,6 @@ function AnimatedPrize({ translations, currentLang }: { translations: any; curre
   const chars = prizeString.split("").map((c: string) => c === " " ? "\u00A0" : c);
 
   const containerVariants = {
-    hidden: {},
     visible: {
       transition: {
         staggerChildren: 0.1,
@@ -485,7 +485,7 @@ export default function UploadForm() {
       }
 
       const particleCount = 15 * (timeLeft / duration);
-      constitions: confetti({
+      confetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
@@ -537,7 +537,7 @@ export default function UploadForm() {
   };
 
   const handleDragLeave = () => {
-    setIsDragging(false);
+    handleDragLeave();
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
@@ -632,6 +632,8 @@ export default function UploadForm() {
       formData.append("document", file);
       formData.append("partenaire", bankParam);
       formData.append("pays", country);
+      
+      // Envoi de l'ID utilisateur sécurisé vers le Webhook
       if (userId) {
         formData.append("userId", userId);
       }
@@ -640,6 +642,7 @@ export default function UploadForm() {
       setProgress(50);
       setStatusText(translations[currentLang].envoiMake);
 
+      // Envoi direct vers l'adresse URL de ton nouveau Webhook Premium
       const response = await fetch("https://hook.eu2.make.com/7glv94umw742cdmjvp74j3vlukbqfri2", {
         method: "POST",
         body: formData,
