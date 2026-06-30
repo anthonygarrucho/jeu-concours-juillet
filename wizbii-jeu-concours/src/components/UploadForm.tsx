@@ -9,7 +9,8 @@ import {
   AlertCircle,
   Lock
 } from "lucide-react";
-import confetti from "canvas-confetti";
+import confettiModule from "canvas-confetti";
+const confetti = confettiModule.create(undefined, { resize: true, useWorker: false });
 import { getLangConfig, getTranslations, getRulesLink } from "../translations";
 
 
