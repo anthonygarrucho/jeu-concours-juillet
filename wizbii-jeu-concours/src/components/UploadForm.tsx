@@ -237,8 +237,24 @@ export default function UploadForm() {
       }
 
       const particleCount = 15 * (timeLeft / duration);
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      confetti({
+        startVelocity: defaults.startVelocity,
+        spread: defaults.spread,
+        ticks: defaults.ticks,
+        zIndex: defaults.zIndex,
+        colors: defaults.colors,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        startVelocity: defaults.startVelocity,
+        spread: defaults.spread,
+        ticks: defaults.ticks,
+        zIndex: defaults.zIndex,
+        colors: defaults.colors,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
     }, 200);
   };
 
