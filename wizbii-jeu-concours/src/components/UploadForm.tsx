@@ -11,7 +11,455 @@ import {
 } from "lucide-react";
 import confettiModule from "canvas-confetti";
 const confetti = confettiModule.create(undefined, { resize: true, useWorker: false });
-import { getLangConfig, getTranslations } from "../translations";
+// Dynamic language and partner configuration + Translation Dictionary for the landing page
+interface LangConfig {
+  country: "fr" | "es" | "it";
+  bankParam: string;
+  bankName: string;
+  isTestMode: boolean;
+  userId: string | null;
+}
+
+const getLangConfig = (): LangConfig => {
+  if (typeof window === "undefined") {
+    return { country: "fr", bankParam: "revolut", bankName: "Revolut", isTestMode: false, userId: null };
+  }
+  const params = new URLSearchParams(window.location.search);
+  
+  // Read country parameter (falls back to legacy pays parameter or "fr")
+  const rawCountry = (params.get("country") || params.get("pays") || "fr").toLowerCase();
+  const country = ["fr", "es", "it"].includes(rawCountry) ? (rawCountry as "fr" | "es" | "it") : "fr";
+
+  const allowedBanksByCountry: Record<string, string[]> = {
+    fr: ["revolut", "bforbank", "n26", "trade-republic"],
+    es: ["revolut", "n26", "b100"],
+    it: ["revolut", "trade-republic", "hype"]
+  };
+
+  const bankDisplayNames: Record<string, string> = {
+    "revolut": "Revolut",
+    "bforbank": "BforBank",
+    "n26": "N26",
+    "trade-republic": "Trade Republic",
+    "b100": "B100",
+    "hype": "Hype"
+  };
+
+  // Read partner parameter (falls back to legacy banque / partenaire / partner or first allowed bank of country)
+  const rawBank = params.get("partner") || params.get("banque") || params.get("partenaire") || "";
+  const cleanBankParam = rawBank.toLowerCase().trim();
+  const allowedBanks = allowedBanksByCountry[country];
+  const bankParam = allowedBanks.includes(cleanBankParam) ? cleanBankParam : (cleanBankParam || allowedBanks[0]);
+  
+  let bankName = "Revolut";
+  if (rawBank) {
+    const matchedName = bankDisplayNames[cleanBankParam];
+    if (matchedName) {
+      bankName = matchedName;
+    } else {
+      // Capitalize first letter of partner parameter
+      bankName = rawBank.charAt(0).toUpperCase() + rawBank.slice(1);
+    }
+  } else {
+    // Default fallback to first allowed bank of the country
+    const defaultBank = allowedBanks[0];
+    bankName = bankDisplayNames[defaultBank] || (defaultBank.charAt(0).toUpperCase() + defaultBank.slice(1));
+  }
+  
+  const isTestMode = params.get("test") === "true";
+  const userId = params.get("uid");
+
+  return {
+    country,
+    bankParam,
+    bankName,
+    isTestMode,
+    userId
+  };
+};
+
+interface TranslationDict {
+  badge: string;
+  hero_desc: string;
+  animation_amount: string;
+  animation_text: string;
+  how_it_works_title: string;
+  step_spend: string;
+  step_send: string;
+  step_cash: string;
+  legal_notice: string;
+  view_rules: string;
+  countdown_title: string;
+  countdown_units: string;
+  already_registered_title: string;
+  already_registered_desc: string;
+  form_title: string;
+  form_subtitle: string;
+  label_lastname: string;
+  label_firstname: string;
+  placeholder_lastname: string;
+  placeholder_firstname: string;
+  drag_drop_zone: string;
+  file_limits: string;
+  submit_button: string;
+  submit_disclaimer: string;
+  fields_mandatory: string;
+  error_lastname: string;
+  error_firstname: string;
+  error_file: string;
+  error_file_size: string;
+  error_file_format: string;
+  success_title: string;
+  success_desc: string;
+  error_global: string;
+  btn_retry: string;
+  btn_cancel: string;
+  modeTest: string;
+  emailLabel: string;
+  emailPlaceholder: string;
+  alertEmailMissing: string;
+  alertEmailInvalid: string;
+  tailleLabel: string;
+  sizes: string[];
+  retirerFichier: string;
+  acceptRulesPart1: string;
+  acceptRulesLink: string;
+  acceptRulesPart2: string;
+  envoiEnCours: string;
+  preparationDossier: string;
+  envoiMake: string;
+  donneesTransmises: string;
+}
+
+interface Translation {
+  badge: string;
+  hero_desc: string;
+  animation_amount: string;
+  animation_text: string;
+  how_it_works_title: string;
+  step_spend: string;
+  step_send: string;
+  step_cash: string;
+  legal_notice: string;
+  view_rules: string;
+  countdown_title: string;
+  countdown_units: string;
+  already_registered_title: string;
+  already_registered_desc: string;
+  form_title: string;
+  form_subtitle: string;
+  label_lastname: string;
+  label_firstname: string;
+  placeholder_lastname: string;
+  placeholder_firstname: string;
+  drag_drop_zone: string;
+  file_limits: string;
+  submit_button: string;
+  submit_disclaimer: string;
+  fields_mandatory: string;
+  error_lastname: string;
+  error_firstname: string;
+  error_file: string;
+  error_file_size: (fileName: string) => string;
+  error_file_format: string;
+  success_title: string;
+  success_desc: string;
+  error_global: string;
+  btn_retry: string;
+  btn_cancel: string;
+  clickToParticipate: string;
+  dejaEnregistre: string;
+  participationPriseEnCompte: string;
+  modeTest: string;
+  debloqueDèsMaintenant: string;
+  ajouteScreenInstructions: string;
+  nomLabel: string;
+  nomPlaceholder: string;
+  prenomLabel: string;
+  prenomPlaceholder: string;
+  emailLabel: string;
+  emailPlaceholder: string;
+  alertNom: string;
+  alertPrenom: string;
+  alertEmailMissing: string;
+  alertEmailInvalid: string;
+  alertJustificatif: string;
+  fileTooLarge: (fileName: string) => string;
+  formatNotSupported: string;
+  cliquezGlissez: string;
+  maxSizeLabel: string;
+  tailleLabel: string;
+  sizes: string[];
+  retirerFichier: string;
+  acceptRulesPart1: string;
+  acceptRulesLink: string;
+  acceptRulesPart2: string;
+  submitButton: string;
+  attestationLabel: string;
+  champsObligatoires: string;
+  envoiEnCours: string;
+  preparationDossier: string;
+  envoiMake: string;
+  donneesTransmises: string;
+  participationValidee: string;
+  successNotice: string;
+  erreurEnvoi: string;
+  buttonReset: string;
+  buttonCancel: string;
+}
+
+const translationsDict: Record<"fr" | "es" | "it", TranslationDict> = {
+  fr: {
+    badge: "Jeu 100% gagnant",
+    hero_desc: "WIZBII te rembourse 10€ sur tes denses de juillet avec ta carte {NomDeLaBanque} ! Et tente de remporter les 1000€ mis en jeu 😱",
+    animation_amount: "1 000€",
+    animation_text: "à gagner",
+    how_it_works_title: "Comment ça marche ?",
+    step_spend: "Dépense : utilise ta carte Revolut (physique ou virtuelle) pour tes dépenses de juillet (min. 10€ requis)",
+    step_send: "Envoie : télécharge ta preuve de dépense via le formulaire juste au-dessus",
+    step_cash: "Encaisse : reçois tes 10€ ET tente de gagner les 1 000€ en jeu",
+    legal_notice: "* Offre valable sous réserve de vérification des dépenses. Le remboursement de 10€ est garanti pour tout participant éligible. Le virement de 1 000€ sera attribué par tirage au sort parmi les participants vérifiés.",
+    view_rules: "Consulter le règlement complet",
+    countdown_title: "Temps restant pour envoyer ton justificatif :",
+    countdown_units: "Jours / Heures / Minutes / Secondes",
+    already_registered_title: "Déjà enregistré ! 👏",
+    already_registered_desc: "Ta participation pour tenter de remporter les 1 000€ est bien prise en compte. Bonne chance !",
+    form_title: "Débloque tes 10€ dès maintenant",
+    form_subtitle: "Ajoute un screen de ton app bancaire {NomDeLaBanque} avec tes dépenses carte de juillet (ou ton dernier relevé de compte)",
+    label_lastname: "Nom * :",
+    label_firstname: "Prénom * :",
+    placeholder_lastname: "Ex. Martin",
+    placeholder_firstname: "Ex. Alexandre",
+    drag_drop_zone: "Clique ou glisse ton fichier ici *",
+    file_limits: "PDF, JPG, PNG — max 3 Mo",
+    submit_button: "Réclamer mes 10€ et participer au tirage au sort des 1 000€",
+    submit_disclaimer: "En cliquant sur le bouton ci-dessus, tu attestes que les informations communiquées sont correctes.",
+    fields_mandatory: "* champs obligatoires pour valider la participation",
+    error_lastname: "Veuillez renseigner votre nom.",
+    error_firstname: "Veuillez renseigner votre prénom.",
+    error_file: "Veuillez joindre votre justificatif.",
+    error_file_size: "Le fichier {NomDuFichier} dépasse la taille maximale autorisée de 3 Mo.",
+    error_file_format: "Format de fichier non supporté. Veuillez téléverser un fichier PDF, JPG ou PNG.",
+    success_title: "Participation validée ! 👏",
+    success_desc: "Ton justificatif a été envoyé avec succès à l’équipe WIZBII ! Tu recevras 10€ sur ton compte {NomDeLaBanque} dans les prochains jours.",
+    error_global: "Une erreur s'est produite lors de l'envoi",
+    btn_retry: "Réessayer",
+    btn_cancel: "Annuler",
+    modeTest: "🛠️ Mode Test : Réinitialiser la participation",
+    emailLabel: "Adresse e-mail * :",
+    emailPlaceholder: "Ex. alexandre@email.com",
+    alertEmailMissing: "Veuillez renseigner votre adresse e-mail.",
+    alertEmailInvalid: "Veuillez renseigner une adresse e-mail valide (ex: un@email.com).",
+    tailleLabel: "Taille : ",
+    sizes: ["octets", "Ko", "Mo", "Go"],
+    retirerFichier: "Retirer le fichier",
+    acceptRulesPart1: "J’accepte le ",
+    acceptRulesLink: "règlement du jeu concours",
+    acceptRulesPart2: "",
+    envoiEnCours: "Envoi en cours de vos informations...",
+    preparationDossier: "Préparation de votre dossier...",
+    envoiMake: "Envoi des données vers Make.com...",
+    donneesTransmises: "Données transmises avec succès !",
+  },
+  es: {
+    badge: "Sorteo con premio 100% asegurado",
+    hero_desc: "¡WIZBII te regala 10 € por tus compras de julio con tu tarjeta {NombreDelBanco}! Y además participa en un sorteo de 1.000 € 😱",
+    animation_amount: "1.000€",
+    animation_text: "en juego",
+    how_it_works_title: "¿Cómo funciona?",
+    step_spend: "Compra: utiliza tu tarjeta Revolut (física o virtual) para realizar compras durante el mes de julio (importe mínimo de 10 €)",
+    step_send: "Envía: sube el justificante de tu compra a través del formulario que encontrarás justo arriba",
+    step_cash: "Recibe: consigue un reembolso de 10 € Y participa en el sorteo de un premio de 1.000 €",
+    legal_notice: "*Promoción válida previa verificación de las compras realizadas. El reembolso de 10 € está garantizado para todos los participantes que cumplan los requisitos de la promoción. El premio de 1.000 € se adjudicará mediante sorteo entre las participaciones validadas.",
+    view_rules: "Consultar las bases legales del concurso",
+    countdown_title: "Tiempo restante para enviar tu justificante:",
+    countdown_units: "Días / Horas / Minutos / Segundos",
+    already_registered_title: "¡Registrado! 👏",
+    already_registered_desc: "Tu participación en el sorteo de 1.000 € ha quedado registrada. ¡Mucha suerte!",
+    form_title: "Desbloquea tus 10€ ahora",
+    form_subtitle: "Sube una captura de pantalla de la app de tu banco {NombreDelBanco} donde se vean las compras realizadas con tu tarjeta en julio (o tu último extracto bancario)",
+    label_lastname: "Apellido* :",
+    label_firstname: "Nombre* :",
+    placeholder_lastname: "Ej. García",
+    placeholder_firstname: "Ej. Alejandro",
+    drag_drop_zone: "Haz clic o arrastra tu archivo aquí*",
+    file_limits: "PDF, JPG, PNG — máx 3 MB",
+    submit_button: "Reclamar mis 10€ y participar en el sorteo de 1.000€",
+    submit_disclaimer: "Al hacer clic en el botón de arriba, confirmas que la información facilitada es correcta.",
+    fields_mandatory: "*campos obligatorios para validar la participación",
+    error_lastname: "Por favor, introduce tu apellido.",
+    error_firstname: "Por favor, introduce tu nombre.",
+    error_file: "Por favor, adjunta tu justificante.",
+    error_file_size: "El archivo {NomDuFichier} supera el tamaño de 3 MB permitido.",
+    error_file_format: "Formato de archivo no válido. Por favor, sube un archivo PDF, JPG o PNG.",
+    success_title: "¡Participación registrada! 👏",
+    success_desc: "¡Tu justificante ha sido enviado con éxito al equipo de WIZBII! Recibirás 10€ en tu cuenta {NomDeLaBanque} en los próximos días.",
+    error_global: "No se ha podido completar el envío.",
+    btn_retry: "Reintentar",
+    btn_cancel: "Cancelar",
+    modeTest: "🛠️ Modo Test: Reiniciar participación",
+    emailLabel: "Correo electrónico * :",
+    emailPlaceholder: "Ej. alejandro@email.com",
+    alertEmailMissing: "Por favor, introduce tu correo electrónico.",
+    alertEmailInvalid: "Por favor, introduce un correo electrónico válido (ej: un@email.com).",
+    tailleLabel: "Tamaño: ",
+    sizes: ["octetos", "KB", "MB", "GB"],
+    retirerFichier: "Eliminar archivo",
+    acceptRulesPart1: "Acepto las ",
+    acceptRulesLink: "bases del concurso",
+    acceptRulesPart2: "",
+    envoiEnCours: "Enviando tu información...",
+    preparationDossier: "Preparando tu solicitud...",
+    envoiMake: "Enviando datos a Make.com...",
+    donneesTransmises: "¡Datos transmitidos con éxito!",
+  },
+  it: {
+    badge: "Gioco 100% vincente",
+    hero_desc: "WIZBII ti rimborsa 10€ sulle tue spese di luglio con la tua carta {NomDeLaBanque}! E prova a vincere i 1.000€ in palio 😱",
+    animation_amount: "1.000€",
+    animation_text: "in palio",
+    how_it_works_title: "Come funziona?",
+    step_spend: "Spendi: usa la tua carta Revolut (fisica o virtuale) per le tue spese di luglio (min. 10€ richiesti)",
+    step_send: "Invia: carica la tua prova di spesa tramite il modulo qui sopra",
+    step_cash: "Incassa: ricevi i tuoi 10€ E prova a vincere i 1.000€ in palio",
+    legal_notice: "* Offerta valida subordinatamente alla verifica delle spese. Il rimborso de 10€ è garantito per tutti i partecipanti idonei. Il premio di 1.000€ sarà assegnato tramite sorteggio tra i partecipanti verificati.",
+    view_rules: "Consulta il regolamento completo",
+    countdown_title: "Tempo rimasto per inviare la tua prova di spesa:",
+    countdown_units: "Giorni / Ore / Minuti / Secondi",
+    already_registered_title: "Già registrato! 👏",
+    already_registered_desc: "La tua partecipazione per provare a vincere i 1.000€ è stata registrata. Buona fortuna!",
+    form_title: "Sblocca i tuoi 10€ ora",
+    form_subtitle: "Aggiungi uno screenshot della tua app bancaria {NomDeLaBanque} con le tue spese di luglio con carta (o il tuo ultimo estratto conto)",
+    label_lastname: "Cognome * :",
+    label_firstname: "Nome * :",
+    placeholder_lastname: "Es. Rossi",
+    placeholder_firstname: "Es. Alessandro",
+    drag_drop_zone: "Clicca o trascina qui il tuo file *",
+    file_limits: "PDF, JPG, PNG — max 3 MB",
+    submit_button: "Richiedi i miei 10€ e partecipa al sorteggio di 1.000€",
+    submit_disclaimer: "Cliccando sul pulsante qui sopra, dichiari che le informazioni fornite sono corrette.",
+    fields_mandatory: "* campi obbligatori per convalidare la partecipazione",
+    error_lastname: "Per favor, inserisci il tuo cognome.",
+    error_firstname: "Per favore, inserisci il tuo nome.",
+    error_file: "Per favore, allega la tua prova di spesa.",
+    error_file_size: "Il file {NomDuFichier} supera la dimensione massima consentita di 3 MB.",
+    error_file_format: "Formato file non supportato. Carica un file PDF, JPG o PNG.",
+    success_title: "Partecipazione confermata! 👏",
+    success_desc: "La tua prova di spesa è stata inviata con successo al team WIZBII! Riceverai 10€ sul tuo conto {NomDeLaBanque} nei prossimi giorni.",
+    error_global: "Si è verificato un errore durante l'invio",
+    btn_retry: "Riprova",
+    btn_cancel: "Annulla",
+    modeTest: "🛠️ Modalità Test: Reimposta partecipazione",
+    emailLabel: "E-mail * :",
+    emailPlaceholder: "Es. alessandro@email.com",
+    alertEmailMissing: "Per favore, inserisci il tuo indirizzo e-mail.",
+    alertEmailInvalid: "Per favore, inserisci un indirizzo e-mail valido (es: un@email.com).",
+    tailleLabel: "Dimensione: ",
+    sizes: ["byte", "KB", "MB", "GB"],
+    retirerFichier: "Rimuovi file",
+    acceptRulesPart1: "Accetto il ",
+    acceptRulesLink: "regolamento del concorso",
+    acceptRulesPart2: "",
+    envoiEnCours: "Invio delle informazioni in corso...",
+    preparationDossier: "Preparazione della tua richiesta...",
+    envoiMake: "Inviando dati a Make.com...",
+    donneesTransmises: "Dati inviati con successo!",
+  }
+};
+
+const getTranslations = (country: "fr" | "es" | "it", bankName: string): Translation => {
+  const dict = translationsDict[country];
+  
+  const replaceAll = (text: string, fileName?: string): string => {
+    if (!text) return "";
+    let res = text
+      .replace(/{NomDeLaBanque}/g, bankName)
+      .replace(/{NombreDelBanco}/g, bankName)
+      .replace(/{NomDuFichier}/g, fileName || "");
+    
+    if (bankName && bankName.toLowerCase() !== "revolut") {
+      res = res.replace(/Revolut/g, bankName);
+    }
+    return res;
+  };
+
+  return {
+    badge: dict.badge,
+    hero_desc: dict.hero_desc,
+    animation_amount: dict.animation_amount,
+    animation_text: dict.animation_text,
+    how_it_works_title: dict.how_it_works_title,
+    step_spend: replaceAll(dict.step_spend),
+    step_send: replaceAll(dict.step_send),
+    step_cash: replaceAll(dict.step_cash),
+    legal_notice: replaceAll(dict.legal_notice),
+    view_rules: dict.view_rules,
+    countdown_title: dict.countdown_title,
+    countdown_units: dict.countdown_units,
+    already_registered_title: dict.already_registered_title,
+    already_registered_desc: replaceAll(dict.already_registered_desc),
+    form_title: dict.form_title,
+    form_subtitle: replaceAll(dict.form_subtitle),
+    label_lastname: replaceAll(dict.label_lastname),
+    label_firstname: replaceAll(dict.label_firstname),
+    placeholder_lastname: replaceAll(dict.placeholder_lastname),
+    placeholder_firstname: replaceAll(dict.placeholder_firstname),
+    drag_drop_zone: dict.drag_drop_zone,
+    file_limits: dict.file_limits,
+    submit_button: dict.submit_button,
+    submit_disclaimer: dict.submit_disclaimer,
+    fields_mandatory: dict.fields_mandatory,
+    error_lastname: dict.error_lastname,
+    error_firstname: dict.error_firstname,
+    error_file: dict.error_file,
+    error_file_size: (fileName: string) => replaceAll(dict.error_file_size, fileName),
+    error_file_format: dict.error_file_format,
+    success_title: dict.success_title,
+    success_desc: replaceAll(dict.success_desc),
+    error_global: dict.error_global,
+    btn_retry: dict.btn_retry,
+    btn_cancel: dict.btn_cancel,
+    clickToParticipate: country === "es" ? "¡Haz clic para participar!" : (country === "it" ? "Clicca per partecipare!" : "Clique pour participer !"),
+    dejaEnregistre: dict.already_registered_title,
+    participationPriseEnCompte: replaceAll(dict.already_registered_desc),
+    modeTest: dict.modeTest,
+    debloqueDèsMaintenant: dict.form_title,
+    ajouteScreenInstructions: replaceAll(dict.form_subtitle),
+    nomLabel: replaceAll(dict.label_lastname).replace(/\s*\*\s*:/g, "").trim(),
+    nomPlaceholder: replaceAll(dict.placeholder_lastname),
+    prenomLabel: replaceAll(dict.label_firstname).replace(/\s*\*\s*:/g, "").trim(),
+    prenomPlaceholder: replaceAll(dict.placeholder_firstname),
+    emailLabel: dict.emailLabel.replace(/\s*\*\s*:/g, "").trim(),
+    emailPlaceholder: dict.emailPlaceholder,
+    alertNom: dict.error_lastname,
+    alertPrenom: dict.error_firstname,
+    alertEmailMissing: dict.alertEmailMissing,
+    alertEmailInvalid: dict.alertEmailInvalid,
+    alertJustificatif: dict.error_file,
+    fileTooLarge: (fileName: string) => replaceAll(dict.error_file_size, fileName),
+    formatNotSupported: dict.error_file_format,
+    cliquezGlissez: dict.drag_drop_zone.replace(/\s*\*\s*:/g, "").replace(/\s*\*\s*/g, "").trim(),
+    maxSizeLabel: dict.file_limits,
+    tailleLabel: dict.tailleLabel,
+    sizes: dict.sizes,
+    retirerFichier: dict.retirerFichier,
+    acceptRulesPart1: dict.acceptRulesPart1,
+    acceptRulesLink: dict.acceptRulesLink,
+    acceptRulesPart2: dict.acceptRulesPart2,
+    submitButton: dict.submit_button,
+    attestationLabel: dict.submit_disclaimer,
+    champsObligatoires: dict.fields_mandatory,
+    envoiEnCours: dict.envoiEnCours,
+    preparationDossier: dict.preparationDossier,
+    envoiMake: dict.envoiMake,
+    donneesTransmises: dict.donneesTransmises,
+    participationValidee: dict.success_title,
+    successNotice: replaceAll(dict.success_desc),
+    erreurEnvoi: dict.error_global,
+    buttonReset: dict.btn_retry,
+    buttonCancel: dict.btn_cancel,
+  };
+};
 
 
 export default function UploadForm() {
