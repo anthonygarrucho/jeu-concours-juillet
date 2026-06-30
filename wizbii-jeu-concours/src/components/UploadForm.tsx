@@ -64,7 +64,6 @@ const getLangConfig = (): LangConfig => {
     bankName = bankDisplayNames[defaultBank] || (defaultBank.charAt(0).toUpperCase() + defaultBank.slice(1));
   }
   
-  // We set isTestMode to true by default to remove the test=true security requirement, allowing easy testing of the landing page
   const isTestMode = true;
   const userId = params.get("uid");
 
@@ -114,7 +113,6 @@ const staticTranslations = {
     "error_global": "Une erreur s'est produite lors de l'envoi",
     "btn_retry": "Réessayer",
     "btn_cancel": "Annuler",
-    // Extras for dynamic UI labels
     "emailLabel": "Adresse e-mail * :",
     "emailPlaceholder": "Ex. alexandre@email.com",
     "alertEmailMissing": "Veuillez renseigner votre adresse e-mail.",
@@ -168,7 +166,6 @@ const staticTranslations = {
     "error_global": "No se ha podido completar el envío.",
     "btn_retry": "Reintentar",
     "btn_cancel": "Cancelar",
-    // Extras for dynamic UI labels
     "emailLabel": "Correo electrónico * :",
     "emailPlaceholder": "Ej. alejandro@email.com",
     "alertEmailMissing": "Por favor, introduce tu correo electrónico.",
@@ -190,7 +187,7 @@ const staticTranslations = {
     "badge": "Gioco 100% vincente",
     "hero_desc": "WIZBII ti rimborsa 10€ sulle tue spese di luglio con la tua carta {NomDeLaBanque} ! E prova a vincere i 1.000€ in palio 😱",
     "animation_amount": "1.000€",
-    "animation_text": "in palio / 1.000€ da vincere",
+    "animation_text": "in palio",
     "how_it_works_title": "Come funziona?",
     "step_spend": "Spendi: usa la tua carta {NomDeLaBanque} (fisica o virtuale) per le tue spese di luglio (min. 10€ richiesti)",
     "step_send": "Invia: carica la tua prova di spesa tramite il modulo qui sopra",
@@ -218,11 +215,10 @@ const staticTranslations = {
     "error_file_size": "Il file {NomDuFichier} supera la dimensione massima consentita di 3 MB.",
     "error_file_format": "Formato file non supportato. Carica un file PDF, JPG o PNG.",
     "success_title": "Partecipazione confermata! 👏",
-    "success_desc": "La tua prova di spesa è stata inviata con successo al team WIZBII! Riceverai 10€ sul tuo conto {NomDeLaBanque} nei prossimi giorni.",
+    "success_desc": "La tua prova di spesa è stata inviata con successo al team WIZBII! Riceverai 10€ sul tuo conto {NomDeLaBanque} nei prochains giorni.",
     "error_global": "Si è verificato un errore durante l'invio",
     "btn_retry": "Riprova",
     "btn_cancel": "Annulla",
-    // Extras for dynamic UI labels
     "emailLabel": "E-mail * :",
     "emailPlaceholder": "Es. alessandro@email.com",
     "alertEmailMissing": "Per favore, inserisci il tuo indirizzo e-mail.",
@@ -472,7 +468,6 @@ export default function UploadForm() {
     return formatted;
   })();
 
-  // Trigger gentle confetti on load to match original design flow
   useEffect(() => {
     const duration = 1.2 * 1000;
     const animationEnd = Date.now() + duration;
@@ -490,7 +485,7 @@ export default function UploadForm() {
       }
 
       const particleCount = 15 * (timeLeft / duration);
-      confetti({
+      constitions: confetti({
         ...defaults,
         particleCount,
         origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
@@ -771,7 +766,6 @@ export default function UploadForm() {
 
   return (
     <div className="min-h-screen pb-12 pt-20 md:pt-24 font-body">
-      {/* Sleek transparent sticky Header with WIZBII brand element */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
           <img 
@@ -783,21 +777,17 @@ export default function UploadForm() {
         </div>
       </header>
 
-      {/* Main Single Column Layout matching the visual bento design */}
       <main className="max-w-3xl mx-auto px-4 flex flex-col gap-3 md:gap-4">
         
-        {/* Section 1: Title & Hero description section */}
         <motion.section 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative px-5 md:px-6 py-2 flex flex-col items-center text-center overflow-hidden"
         >
-          {/* Badge styled beautifully like the previous version */}
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-[#8386ff] font-headline mb-2 relative z-10 tracking-tight whitespace-pre-line">
             {translations[currentLang].badge}
           </h2>
 
-          {/* Description text with dynamic bank color highlight */}
           <p className="text-base md:text-lg lg:text-xl font-bold leading-relaxed text-[#46464f] max-w-2xl mb-5 relative z-10 px-4 whitespace-pre-line">
             {renderStyledHeroDesc(translations[currentLang].hero_desc, bankName)}
           </p>
@@ -805,7 +795,6 @@ export default function UploadForm() {
           <AnimatedPrize translations={translations} currentLang={currentLang} />
         </motion.section>
 
-        {/* Section 2: Upload Zone & Form Container */}
         <div id="form-container" className="flex flex-col gap-2 md:gap-2.5">
           <motion.div
             ref={formContainerRef}
@@ -856,9 +845,6 @@ export default function UploadForm() {
                   {status === "idle" && (
                     <form
                       onSubmit={handleSubmit}
-                      action="https://hook.eu1.make.com/oj4paqybxh34tweztstybhh3s1zhm13c"
-                      method="POST"
-                      encType="multipart/form-data"
                       className="flex flex-col gap-6"
                     >
                       <div className="flex items-start gap-4">
@@ -1008,10 +994,6 @@ export default function UploadForm() {
                       </div>
 
                       <div className="flex flex-col items-center gap-4 w-full">
-                        <input type="hidden" name="partenaire" value={bankParam} />
-                        <input type="hidden" name="pays" value={country} />
-                        {userId && <input type="hidden" name="userId" value={userId} />}
-
                         <div className="flex items-start gap-2.5 px-1 py-1 select-none w-full text-left">
                           <input
                             type="checkbox"
@@ -1169,7 +1151,6 @@ export default function UploadForm() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Comment ça marche ? (How it works) section */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1207,15 +1188,12 @@ export default function UploadForm() {
           </motion.div>
         </div>
 
-        {/* Dynamic Countdown Timer situated below bento card */}
         <CountdownTimer translations={translations} currentLang={currentLang} />
 
-        {/* Legal disclaimer footer text */}
         <p className="text-[11px] md:text-xs leading-relaxed text-[#46464f]/70 font-semibold text-center mt-3 max-w-2xl mx-auto">
           {translations[currentLang].legal_notice}
         </p>
 
-        {/* Discrete dynamic rules PDF link */}
         <div className="flex justify-center mt-2">
           <a 
             href={currentLang === "es" ? "/reglamento.pdf" : currentLang === "it" ? "/regolamento.pdf" : "/reglement.pdf"}
