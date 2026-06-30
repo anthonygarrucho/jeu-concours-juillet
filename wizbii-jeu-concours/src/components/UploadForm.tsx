@@ -64,7 +64,8 @@ const getLangConfig = (): LangConfig => {
     bankName = bankDisplayNames[defaultBank] || (defaultBank.charAt(0).toUpperCase() + defaultBank.slice(1));
   }
   
-  const isTestMode = params.get("test") === "true";
+  // We set isTestMode to true by default to remove the test=true security requirement, allowing easy testing of the landing page
+  const isTestMode = true;
   const userId = params.get("uid");
 
   return {
