@@ -640,7 +640,7 @@ export default function UploadForm() {
       setProgress(50);
       setStatusText(translations[currentLang].envoiMake);
 
-      const response = await fetch("https://hook.eu1.make.com/oj4paqybxh34tweztstybhh3s1zhm13c", {
+      const response = await fetch("https://hook.eu2.make.com/7glv94umw742cdmjvp74j3vlukbqfri2", {
         method: "POST",
         body: formData,
       });
