@@ -79,11 +79,11 @@ const getLangConfig = (): LangConfig => {
 const staticTranslations = {
   "fr": {
     "badge": "Jeu 100% gagnant",
-    "hero_desc": "WIZBII te rembourse 10€ sur tes dépenses de juillet<br />avec ta carte Revolut ! Et tente de remporter les 1000€ mis en jeu 😱",
+    "hero_desc": "WIZBII te rembourse 10€ sur tes dépenses de juillet avec ta carte {NomDeLaBanque} ! Et tente de remporter les 1000€ mis en jeu 😱",
     "animation_amount": "1 000€",
     "animation_text": "à gagner",
     "how_it_works_title": "Comment ça marche ?",
-    "step_spend": "Dépense : utilise ta carte Revolut (physique ou virtuelle) pour tes dépenses de juillet (min. 10€ requis)",
+    "step_spend": "Dépense : utilise ta carte {NomDeLaBanque} (physique ou virtuelle) pour tes d’épenses de juillet (min. 10€ requis)",
     "step_send": "Envoie : télécharge ta preuve de dépense via le formulaire juste au-dessus",
     "step_cash": "Encaisse : reçois tes 10€ ET tente de gagner les 1 000€ en jeu",
     "legal_notice": "* Offre valable sous réserve de vérification des dépenses. Le remboursement de 10€ est garanti pour tout participant éligible. Le virement de 1 000€ sera attribué par tirage au sort parmi les participants vérifiés.",
@@ -131,11 +131,11 @@ const staticTranslations = {
   },
   "es": {
     "badge": "Sorteo con premio 100% asegurado",
-    "hero_desc": "¡WIZBII te regala 10 € por tus compras de julio<br />con tu tarjeta Revolut! Y además participa en un sorteo de 1.000 € 😱",
+    "hero_desc": "¡WIZBII te regala 10 € por tus compras de julio con tu tarjeta {NombreDelBanco}! Y además participa en un sorteo de 1.000 € 😱",
     "animation_amount": "1.000€",
     "animation_text": "en juego",
     "how_it_works_title": "¿Cómo funciona?",
-    "step_spend": "Compra: utiliza tu tarjeta Revolut (física o virtual) para realizar compras durante el mes de julio (importe mínimo de 10 €)",
+    "step_spend": "Compra: utiliza tu tarjeta {NombreDelBanco} (física o virtual) para realizar compras durante el mes de julio (importe mínimo de 10 €)",
     "step_send": "Envía: sube el justificante de tu compra a través del formulario que encontrarás justo arriba",
     "step_cash": "Recibe: consigue un reembolso de 10 € Y participa en el sorteo de un premio de 1.000 €",
     "legal_notice": "*Promoción válida previa verificación de las compras realizadas. El reembolso de 10 € está garantizado para todos los participantes que cumplan los requisitos de la promoción. El premio de 1.000 € se adjudicará mediante sorteo entre las participaciones validadas.",
@@ -183,11 +183,11 @@ const staticTranslations = {
   },
   "it": {
     "badge": "Gioco 100% vincente",
-    "hero_desc": "WIZBII ti rimborsa 10€ sulle tue spese di luglio<br />con la tua carte Revolut! E prova a vincere i 1.000€ in palio 😱",
+    "hero_desc": "WIZBII ti rimborsa 10€ sulle tue spese di luglio con la tua carta {NomDeLaBanque} ! E prova a vincere i 1.000€ in palio 😱",
     "animation_amount": "1.000€",
     "animation_text": "in palio",
     "how_it_works_title": "Come funziona?",
-    "step_spend": "Spendi: usa la tua carta Revolut (fisica o virtuale) per le tue spese di luglio (min. 10€ richiesti)",
+    "step_spend": "Spendi: usa la tua carta {NomDeLaBanque} (fisica o virtuale) per le tue spese di luglio (min. 10€ richiesti)",
     "step_send": "Invia: carica la tua prova di spesa tramite il modulo qui sopra",
     "step_cash": "Incassa: ricevi i tuoi 10€ E prova a vincere i 1.000€ in palio",
     "legal_notice": "* Offerta valida subordinatamente alla verifica delle spese. Il rimborso de 10€ è garantito per tutti i partecipanti idonei. Il premio di 1.000€ sarà assegnato tramite sorteggio tra i partecipanti verificati.",
@@ -196,7 +196,6 @@ const staticTranslations = {
     "countdown_units": "Giorni / Ore / Minuti / Secondi",
     "already_registered_title": "Già registrato! 👏",
     "already_registered_desc": "La tua partecipazione per provare a vincere i 1.000€ è stata registrata. Buona fortuna!",
-    "title": "Sblocca i tuoi 10€ ora",
     "form_title": "Sblocca i tuoi 10€ ora",
     "form_subtitle": "Aggiungi uno screenshot della tua app bancaria {NomDeLaBanque} con le tue spese di luglio con carta (o il tuo ultimo estratto conto)",
     "label_lastname": "Cognome * :",
@@ -273,7 +272,6 @@ export default function UploadForm() {
           formatted[lang][key] = value;
         }
       }
-      formatted[lang]["title"] = formatted[lang]["form_title"];
     }
     return formatted;
   })();
@@ -577,7 +575,7 @@ export default function UploadForm() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <h3 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#000028] font-headline">
-                      {translations[currentLang].title}
+                      {translations[currentLang].form_title}
                     </h3>
                     <p className="text-sm md:text-base font-semibold text-[#46464f] leading-snug">
                       {translations[currentLang].form_subtitle}
