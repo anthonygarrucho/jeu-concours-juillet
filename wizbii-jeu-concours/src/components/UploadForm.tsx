@@ -139,12 +139,12 @@ const staticTranslations = {
     "step_spend": "Compra: utiliza tu tarjeta {NombreDelBanco} (física o virtual) para realizar compras durante el mes de julio (importe mínimo de 10 €)",
     "step_send": "Envía: sube el justificante de tu compra a través del formulario que encontrarás justo arriba",
     "step_cash": "Recibe: consigue un reembolso de 10 € Y participa en el sorteo de un premio de 1.000 €",
-    "legal_notice": "*Promoción válida previa verificación de las compras realizadas. El reembolso de 10 € está garantizado para todos los participantes que cumplan los requisitos de la promoción. El premio de 1.000 € se adjudicará mediante sorteo entre las participaciones validadas.",
+    "legal_notice": "*Promoción válida previa verificación de las compras realizadas. El reembolso de 10 € está garantizado para todos los participantes que cumplan los requisitos de la promoción. El premio de 1.000 € se adjudicará mediante sorteo entre las participaciones valadas.",
     "view_rules": "Consultar las bases legales del concurso",
     "countdown_title": "Tiempo restante para enviar tu justificante:",
     "countdown_units": "Días / Horas / Minutos / Segundos",
     "already_registered_title": "¡Registrado! 👏",
-    "already_registered_desc": "Tu participation en el sorteo de 1.000 € ha quedado registrada. ¡Mucha suerte!",
+    "already_registered_desc": "Tu participación en el sorteo de 1.000 € ha quedado registrada. ¡Mucha suerte!",
     "form_title": "Desbloquea tus 10€ ahora",
     "form_subtitle": "Sube una captura de pantalla de la app de tu banco {NombreDelBanco} donde se vean las compras realizadas con tu tarjeta en julio (o tu último extracto bancario)",
     "label_lastname": "Apellido* :",
@@ -216,7 +216,7 @@ const staticTranslations = {
     "error_file_format": "Formato file non supportato. Carica un file PDF, JPG o PNG.",
     "success_title": "Partecipazione confermata! 👏",
     "success_desc": "La tua prova di spesa è stata inviata con successo al team WIZBII! Riceverai 10€ sul tuo conto {NomDeLaBanque} nei prochains giorni.",
-    "error_global": "Si è verificato un errore durant l'invio",
+    "error_global": "Si è verificato un errore durante l'invio",
     "btn_retry": "Riprova",
     "btn_cancel": "Annulla",
     "emailLabel": "E-mail * :",
@@ -233,7 +233,7 @@ const staticTranslations = {
     "preparationDossier": "Preparazione della tua richiesta...",
     "envoiMake": "Inviando dati a Make.com...",
     "donneesTransmises": "Dati inviati con successo!",
-    "modeTest": "🛠️ Modalità Test: Reimposta partecipazione",
+    "modeTest": "💡 Modalità Test: Reimposta partecipazione",
     "clickToParticipate": "Clicca per partecipare!"
   }
 } as const;
@@ -427,10 +427,14 @@ function CountdownTimer({ translations, currentLang }: { translations: any; curr
   );
 }
 
+// Extraction propre des paramètres d'URL pour le pré-remplissage global
+const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+
 export default function UploadForm() {
-  const [lastName, setLastName] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [email, setEmail] = useState("");
+  // Initialisation intelligente : cherche d'abord dans l'URL si des valeurs existent (sinon, reste vide)
+  const [lastName, setLastName] = useState(urlParams?.get("lastname") || urlParams?.get("nom") || "");
+  const [firstName, setFirstName] = useState(urlParams?.get("firstname") || urlParams?.get("prenom") || "");
+  const [email, setEmail] = useState(urlParams?.get("email") || "");
   const [emailTouched, setEmailTouched] = useState(false);
   const [acceptRules, setAcceptRules] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -467,7 +471,6 @@ export default function UploadForm() {
     return formatted;
   })();
 
-  // Modification dynamique du titre de l'onglet selon le pays et la banque
   useEffect(() => {
     const titles = {
       fr: `Jeu Concours WIZBII x ${bankName}`,
@@ -684,7 +687,7 @@ export default function UploadForm() {
           ? "No se pudo enviar tu solicitud. Comprueba tu conexión o vuelve a intentarlo."
           : country === "it"
           ? "Impossibile inviare la richiesta. Verifica la tua connessione o riprova."
-          : "Impossible d'envoyer votre démarche. Veuillez verificar votre connexion ou réessayer."
+          : "Impossible d'envoyer votre démarche. Veuillez vérifier votre connexion ou réessayer."
       ));
     }
   };
@@ -726,9 +729,9 @@ export default function UploadForm() {
   };
 
   const resetForm = () => {
-    setLastName("");
-    setFirstName("");
-    setEmail("");
+    setLastName(urlParams?.get("lastname") || urlParams?.get("nom") || "");
+    setFirstName(urlParams?.get("firstname") || urlParams?.get("prenom") || "");
+    setEmail(urlParams?.get("email") || "");
     setEmailTouched(false);
     setAcceptRules(false);
     setFile(null);
