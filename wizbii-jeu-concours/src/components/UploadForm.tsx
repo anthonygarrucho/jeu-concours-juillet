@@ -199,7 +199,7 @@ const staticTranslations = {
     "already_registered_title": "Già registrato! 👏",
     "already_registered_desc": "La tua partecipazione per provare a vincere i 1.000€ è stata registrata. Buona fortuna!",
     "form_title": "Sblocca i tuoi 10€ ora",
-    "form_subtitle": "Aggiungi uno screenshot della tua app bancaria {NomDeLaBanque} con le tue spese di luglio con carta (o il tuo ultimo estratto conto)",
+    "form_subtitle": "Aggiungi uno screenshot della tua app bancaria {NomDeLaBanque} avec tes dépenses carte de juillet (en de compte)",
     "label_lastname": "Cognome * :",
     "label_firstname": "Nome * :",
     "placeholder_lastname": "Es. Rossi",
@@ -435,7 +435,8 @@ export default function UploadForm() {
   const [email, setEmail] = useState(urlParams?.get("email") || "");
   const [emailTouched, setEmailTouched] = useState(false);
   const [acceptRules, setAcceptRules] = useState(false);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  // Bloqué sur FALSE en permanence pour désactiver l'écran "Déjà enregistré" au rafraîchissement
+  const [hasSubmitted] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -444,7 +445,7 @@ export default function UploadForm() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
 
-  const { country, bankParam, bankName, isTestMode, userId } = getLangConfig();
+  const { country, bankParam, bankName, userId } = getLangConfig();
   const currentLang = country;
 
   const translations = (() => {
@@ -509,17 +510,6 @@ export default function UploadForm() {
 
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const alreadySubmitted = localStorage.getItem("hasParticipated") === "true" ||
-                             localStorage.getItem("has_submitted_contest") === "true";
-    
-    if (isTestMode) {
-      setHasSubmitted(false);
-    } else if (alreadySubmitted) {
-      setHasSubmitted(true);
-    }
-  }, [isTestMode]);
 
   useEffect(() => {
     if ((status === "success" || status === "error") && formContainerRef.current) {
@@ -669,11 +659,6 @@ export default function UploadForm() {
       setProgress(100);
       setStatusText(translations[currentLang].donneesTransmises);
       await new Promise(r => setTimeout(r, 400));
-
-      if (!isTestMode) {
-        localStorage.setItem("hasParticipated", "true");
-        localStorage.setItem("has_submitted_contest", "true");
-      }
 
       setStatus("success");
       triggerSuccessConfetti();
@@ -836,20 +821,6 @@ export default function UploadForm() {
                   <p className="text-sm md:text-base font-semibold text-[#46464f] max-w-lg leading-relaxed mb-6">
                     {translations[currentLang].already_registered_desc}
                   </p>
-
-                  {isTestMode && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        localStorage.removeItem("hasParticipated");
-                        localStorage.removeItem("has_submitted_contest");
-                        setHasSubmitted(false);
-                      }}
-                      className="px-4 py-2 bg-[#8683ff]/15 hover:bg-[#8683ff]/25 text-[#8683ff] text-xs font-black rounded-full transition-all cursor-pointer shadow-2xs border border-[#8683ff]/10"
-                    >
-                      {translations[currentLang].modeTest}
-                    </button>
-                  )}
                 </motion.div>
               ) : (
                 <>
