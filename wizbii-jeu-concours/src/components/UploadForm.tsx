@@ -206,7 +206,7 @@ const staticTranslations = {
     "placeholder_firstname": "Es. Alessandro",
     "drag_drop_zone": "Clicca o trascina qui il tuo file *",
     "file_limits": "PDF, JPG, PNG — max 3 MB",
-    "submit_button": "Richiedi i miei 10€ e partecipa al sorteggio di 1.000€",
+    "submit_button": "richiedi i tuoi 10€ e partecipa al sorteggio di 1000€",
     "submit_disclaimer": "Cliccando sul pulsante qui sopra, dichiari che le informazioni fornite sono corrette.",
     "fields_mandatory": "* campi obbligatori per convalidare la partecipazione",
     "error_lastname": "Per favore, inserisci il tuo cognome.",
@@ -427,11 +427,9 @@ function CountdownTimer({ translations, currentLang }: { translations: any; curr
   );
 }
 
-// Extraction propre des paramètres d'URL pour le pré-remplissage global
 const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
 
 export default function UploadForm() {
-  // Initialisation intelligente : cherche d'abord dans l'URL si des valeurs existent (sinon, reste vide)
   const [lastName, setLastName] = useState(urlParams?.get("lastname") || urlParams?.get("nom") || "");
   const [firstName, setFirstName] = useState(urlParams?.get("firstname") || urlParams?.get("prenom") || "");
   const [email, setEmail] = useState(urlParams?.get("email") || "");
