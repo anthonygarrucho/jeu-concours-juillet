@@ -79,7 +79,7 @@ const getLangConfig = (): LangConfig => {
 const staticTranslations = {
   "fr": {
     "badge": "Jeu 100% gagnant",
-    "hero_desc": "WIZBII te rembourse 10€ sur tes dépenses de juillet avec ta carte {NomDeLaBanque} ! Et tente de remporter les 1000€ mis en jeu 😱",
+    "hero_desc": "WIZBII te rembourse 10€ sur tes denses de juillet avec ta carte {NomDeLaBanque} ! Et tente de remporter les 1000€ mis en jeu 😱",
     "animation_amount": "1 000€",
     "animation_text": "à gagner",
     "how_it_works_title": "Comment ça marche ?",
@@ -180,7 +180,7 @@ const staticTranslations = {
     "preparationDossier": "Preparando tu solicitud...",
     "envoiMake": "Enviando datos a Make.com...",
     "donneesTransmises": "¡Datos transmitidos con éxito!",
-    "modeTest": "🛠️ Modo Test: Reiniciar participación",
+    "modeTest": "🛠️ Mode Test: Reiniciar participación",
     "clickToParticipate": "¡Haz clic para participar!"
   },
   "it": {
@@ -199,7 +199,8 @@ const staticTranslations = {
     "already_registered_title": "Già registrato! 👏",
     "already_registered_desc": "La tua partecipazione per provare a vincere i 1.000€ è stata registrata. Buona fortuna!",
     "form_title": "Sblocca i tuoi 10€ ora",
-    "form_subtitle": "Aggiungi uno screenshot della tua app bancaria {NomDeLaBanque} avec tes dépenses carte de juillet (en de compte)",
+    // CORRECTION : Traduction complète et propre en italien appliquée ci-dessous
+    "form_subtitle": "Aggiungi uno screenshot dell'app della tua banca {NomDeLaBanque} con le spese della tua carta di luglio (o il tuo ultimo estratto conto)",
     "label_lastname": "Cognome * :",
     "label_firstname": "Nome * :",
     "placeholder_lastname": "Es. Rossi",
@@ -435,7 +436,6 @@ export default function UploadForm() {
   const [email, setEmail] = useState(urlParams?.get("email") || "");
   const [emailTouched, setEmailTouched] = useState(false);
   const [acceptRules, setAcceptRules] = useState(false);
-  // Bloqué sur FALSE en permanence pour désactiver l'écran "Déjà enregistré" au rafraîchissement
   const [hasSubmitted] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
