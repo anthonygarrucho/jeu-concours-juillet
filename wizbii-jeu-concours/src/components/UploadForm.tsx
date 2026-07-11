@@ -79,7 +79,7 @@ const getLangConfig = (): LangConfig => {
 const staticTranslations = {
   "fr": {
     "badge": "Jeu 100% gagnant",
-    "hero_desc": "WIZBII te rembourse 10€ sur tes denses de juillet avec ta carte {NomDeLaBanque} ! Et tente de remporter les 1000€ mis en jeu 😱",
+    "hero_desc": "WIZBII te rembourse 10€ sur tes dépenses de juillet avec ta carte {NomDeLaBanque} ! Et tente de remporter les 1000€ mis en jeu 😱",
     "animation_amount": "1 000€",
     "animation_text": "à gagner",
     "how_it_works_title": "Comment ça marche ?",
